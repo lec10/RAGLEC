@@ -1,0 +1,1 @@
+"""Módulo para procesar consultas y obtener respuestas del sistema RAG.""" 

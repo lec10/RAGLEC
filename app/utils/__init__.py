@@ -1,0 +1,1 @@
+"""Módulo con utilidades y funciones auxiliares para la aplicación RAG.""" 

@@ -1,0 +1,430 @@
+[
+  {
+    "question": "cual es el Modelo para Identificación de Necesidades y",
+    "response": "No encontré información relevante para responder a tu pregunta.",
+    "sources": []
+  },
+  {
+    "question": "Oportunidades de Negocio",
+    "response": "No encontré información relevante para responder a tu pregunta.",
+    "sources": []
+  },
+  {
+    "question": "Búsqueda de necesidades",
+    "response": "No encontré información relevante para responder a tu pregunta.",
+    "sources": []
+  },
+  {
+    "question": "dime los TODO que hay en el documento",
+    "response": "No encontré información relevante para responder a tu pregunta.",
+    "sources": []
+  },
+  {
+    "question": "cuál seria un modelo para Modelo para Identificación de Necesidades y",
+    "response": "Un modelo para la Identificación de Necesidades y Oportunidades de Negocio incluye varios pasos clave:\n\n1. **Investigación y Recolección de Datos**:\n   - **Entrevistas a Expertos**: Desarrollar un cuestionario enfocado en identificar necesidades sintomáticas (problemas visibles) y asintomáticas (problemas ocultos o no evidentes). Identificar a los expertos a entrevistar y realizar entrevistas con especialistas de la industria para entender los desafíos actuales y futuros (Documento 2, Fragmento 3).\n   - **Análisis de Casos de Éxito**: Investigar casos de éxito en la aplicación de IA dentro de la industria objetivo, analizando cómo se abordaron los problemas, las tecnologías utilizadas y los resultados obtenidos (Documento 2, Fragmento 3).\n\n2. **Definición de Soluciones**:\n   - Alinear las soluciones con los problemas identificados y definir los recursos necesarios (humanos, tecnológicos, físicos y virtuales) (Documento 3, Fragmento 7).\n   - Desarrollar programas de capacitación para mantenerse al tanto de las herramientas y tecnologías emergentes (Documento 3, Fragmento 7).\n\n3. **Análisis de la Demanda y Evaluación del Potencial de Crecimiento**:\n   - Investigar la demanda actual y futura de soluciones basadas en IA y evaluar el potencial de crecimiento de la industria objetivo y la adopción de las soluciones de IA (Documento 3, Fragmento 7).\n\n4. **Estudio de Competidores**:\n   - Analizar competidores actuales y sus ofertas para identificar fortalezas, debilidades y áreas de oportunidad (Documento 3, Fragmento 7).\n\n5. **Desarrollo de Capacidades Internas**:\n   - Crear un laboratorio interno para experimentar con nuevas tecnologías y entrenar modelos de IA, así como establecer acuerdos comerciales con proveedores de herramientas de IA para reducir costos (Documento 5, Fragmento 6).\n\nEste modelo proporciona un enfoque estructurado para identificar necesidades y oportunidades en el contexto de la inteligencia artificial y su aplicación en diversas industrias.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3a46622e54e1f6da23cf1058cf3ddcf1",
+        "chunk_index": 0,
+        "total_chunks": 28,
+        "similarity": 0.576695697805164,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "46f4105c8cc8a1f42079a39c1f605a85",
+        "chunk_index": 2,
+        "total_chunks": 28,
+        "similarity": 0.52768047566421,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "4f3f47afd0491d4177e0bbe790f82428",
+        "chunk_index": 6,
+        "total_chunks": 28,
+        "similarity": 0.504006102323005,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "79a0fba857e49564b3b885826abbd233",
+        "chunk_index": 1,
+        "total_chunks": 28,
+        "similarity": 0.459965084185774,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "bff775e943709b0e8cbcc382b2040937",
+        "chunk_index": 5,
+        "total_chunks": 28,
+        "similarity": 0.459216397334613,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "Que modelo se utiliza para identificar necesidades y oportunidades de negocio?",
+    "response": "El modelo utilizado para identificar necesidades y oportunidades de negocio incluye varios pasos clave:\n\n1. **Investigación y Recolección de Datos**:\n   - Se desarrollará un cuestionario enfocado en identificar necesidades sintomáticas (problemas visibles) y asintomáticas (problemas ocultos o no evidentes).\n   - Se identificarán expertos a entrevistar y se realizarán entrevistas con especialistas de la industria para entender los desafíos actuales y futuros.\n   - Se llevará a cabo un análisis de casos de éxito en la aplicación de IA dentro de la industria objetivo, investigando cómo se abordaron los problemas, las tecnologías utilizadas y los resultados obtenidos (Documento 1, Fragmento 3).\n\n2. **Búsqueda de Necesidades**:\n   - Se realizarán entrevistas a especialistas de la industria y se utilizará un cuestionario para identificar necesidades sintomáticas y asintomáticas, teniendo en cuenta que no se es especialista en la industria.\n   - Se buscarán casos de éxito en el uso de IA y se participará en eventos y ferias enfocados en IA/vertical (Documento 2, Fragmento 1).\n\n3. **Definición de Solución y del Modelo de Negocio**:\n   - Se investigará la demanda actual y futura de soluciones basadas en IA, así como el potencial de crecimiento de la industria objetivo y la adopción de soluciones de IA.\n   - Se realizará un estudio de competidores para identificar fortalezas, debilidades y áreas de oportunidad (Documento 4, Fragmento 7 y Documento 5, Fragmento 8).\n\nEstos pasos forman parte de un modelo integral para identificar necesidades y oportunidades en el contexto de soluciones basadas en IA.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "46f4105c8cc8a1f42079a39c1f605a85",
+        "chunk_index": 2,
+        "total_chunks": 28,
+        "similarity": 0.655331987778185,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3a46622e54e1f6da23cf1058cf3ddcf1",
+        "chunk_index": 0,
+        "total_chunks": 28,
+        "similarity": 0.650345802307134,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "aaafe76c07d2a9f24d2426adeadd4902",
+        "chunk_index": 15,
+        "total_chunks": 28,
+        "similarity": 0.60252457283657,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "4f3f47afd0491d4177e0bbe790f82428",
+        "chunk_index": 6,
+        "total_chunks": 28,
+        "similarity": 0.549857789294999,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "9ef0b63721e801bd98832caa8d9ae3d3",
+        "chunk_index": 7,
+        "total_chunks": 28,
+        "similarity": 0.541228771209721,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "prueba",
+    "response": "No tengo suficiente información para responder a esta pregunta.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "79a0fba857e49564b3b885826abbd233",
+        "chunk_index": 1,
+        "total_chunks": 28,
+        "similarity": 0.332288890983663,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "9ef0b63721e801bd98832caa8d9ae3d3",
+        "chunk_index": 7,
+        "total_chunks": 28,
+        "similarity": 0.331818441504793,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "b1ff568aed3f067796cb58106b2a915c",
+        "chunk_index": 4,
+        "total_chunks": 28,
+        "similarity": 0.31256351806413,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "791d511ee846dc28ea8e81c63635770f",
+        "chunk_index": 24,
+        "total_chunks": 28,
+        "similarity": 0.292368671525465,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "5010980f137ae855eb72307afe4099a1",
+        "chunk_index": 18,
+        "total_chunks": 28,
+        "similarity": 0.286563409352811,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuáles serían ejemplo de primeras industrias que podríamos atacar?",
+    "response": "Ejemplos de primeras industrias que podrían ser atractivas para la implementación de soluciones de IA incluyen:\n\n1. **Salud**: Esta industria cuenta con una gran cantidad de datos y tiene un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17).\n\n2. **Finanzas**: Presenta una madurez digital alta y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 1, Fragmento 17).\n\nEstas industrias son consideradas debido a su potencial de impacto positivo y la disponibilidad de datos relevantes, lo que las hace atractivas para la adopción de tecnologías de IA.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.518849838732151,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.478238433599475,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.453502687603082,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "aaafe76c07d2a9f24d2426adeadd4902",
+        "chunk_index": 15,
+        "total_chunks": 28,
+        "similarity": 0.438934531148347,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.436912856926067,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuáles serían ejemplo de primeras industrias que podríamos atacar?",
+    "response": "Ejemplos de primeras industrias que podrían ser atractivas para la implementación de soluciones de IA incluyen:\n\n1. **Salud**: Esta industria cuenta con una gran cantidad de datos y tiene un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17 de 28).\n\n2. **Finanzas**: Presenta una madurez digital alta y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 1, Fragmento 17 de 28).\n\nEstas industrias son consideradas debido a su potencial de impacto positivo y la disponibilidad de datos relevantes, lo que las hace atractivas para la adopción de tecnologías de IA.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.518827663555246,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.478158357362943,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.453449108579915,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "aaafe76c07d2a9f24d2426adeadd4902",
+        "chunk_index": 15,
+        "total_chunks": 28,
+        "similarity": 0.438928428952192,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.43686127662659,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuáles serían ejemplo de primeras industrias que podríamos atacar?",
+    "response": "Ejemplos de primeras industrias que podrían ser atractivas para la implementación de soluciones de IA incluyen:\n\n1. **Salud**: Esta industria cuenta con una gran cantidad de datos y tiene un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17).\n\n2. **Finanzas**: Se caracteriza por una alta madurez digital y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 1, Fragmento 17).\n\nEstas industrias son consideradas debido a su potencial de impacto positivo y la disponibilidad de datos relevantes, lo que las hace atractivas para la adopción de tecnologías de IA.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.518827663555246,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.478158357362943,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.453449108579915,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "aaafe76c07d2a9f24d2426adeadd4902",
+        "chunk_index": 15,
+        "total_chunks": 28,
+        "similarity": 0.438928428952192,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.43686127662659,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuáles serían las 5  primeras industrias que podríamos atacar?",
+    "response": "Las cinco primeras industrias que podrían ser atractivas para implementar soluciones de IA, según el contexto proporcionado, son:\n\n1. **Salud**: Esta industria tiene una gran cantidad de datos y un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17).\n\n2. **Finanzas**: Presenta una alta madurez digital y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 1, Fragmento 17).\n\n3. **Industrias con alta tasa de crecimiento**: Aunque no se especifican ejemplos concretos, se sugiere que las industrias con tasas de crecimiento aceleradas son preferibles, ya que indican un entorno dinámico y abierto a la adopción de nuevas tecnologías como la IA (Documento 3, Fragmento 11).\n\n4. **Industrias con problemas claros que la IA puede resolver**: Se menciona que es fundamental que la industria seleccionada tenga acceso a datos relevantes y de alta calidad, y que existan problemas significativos donde la IA pueda agregar valor (Documento 3, Fragmento 11).\n\n5. **Industrias con un alto nivel de adopción tecnológica y madurez digital**: Estas industrias son más propensas a adoptar soluciones de IA, ya que tienen una base digital sólida (Documento 5, Fragmento 12).\n\nNo se proporcionan nombres específicos para las industrias en los puntos 3, 4 y 5, pero se enfatiza la importancia de la tasa de crecimiento, la disponibilidad de datos y la madurez digital en la selección de industrias para la implementación de IA.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.493932172475242,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.493077607200574,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.462859102997994,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.434890035695438,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.432817951961052,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuáles serían las 5 primeras industrias que podríamos atacar?",
+    "response": "Las cinco primeras industrias que podrían ser atractivas para la implementación de soluciones de inteligencia artificial (IA), según el contexto proporcionado, son:\n\n1. **Salud**: Esta industria tiene una gran cantidad de datos y un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 2, Fragmento 17 de 28).\n\n2. **Finanzas**: Presenta una madurez digital alta y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 2, Fragmento 17 de 28).\n\n3. **Industrias con un gran tamaño de mercado**: Se sugiere evaluar industrias que ofrezcan más oportunidades de capturar valor debido a su tamaño (Documento 3, Fragmento 11 de 28).\n\n4. **Industrias con tasas de crecimiento aceleradas**: Estas industrias son preferibles ya que sugieren un entorno dinámico y abierto a la adopción de nuevas tecnologías como la IA (Documento 3, Fragmento 11 de 28).\n\n5. **Industrias con problemas claros que la IA puede resolver**: Es fundamental que la industria seleccionada tenga acceso a datos relevantes y de alta calidad, y que existan problemas significativos donde la IA pueda agregar valor (Documento 3, Fragmento 11 de 28).\n\nEstas industrias son seleccionadas basándose en criterios de viabilidad, tamaño del mercado, crecimiento, disponibilidad de datos y problemas que la IA puede abordar.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.494901300692252,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.486982748300377,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.458343995110991,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.435521193084587,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.430058231932453,
+        "rank": 5
+      }
+    ]
+  }
+]

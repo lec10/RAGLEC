@@ -1,0 +1,1 @@
+"""Módulo de gestión de la base de datos vectorial con Supabase.""" 

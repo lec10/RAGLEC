@@ -1,0 +1,1 @@
+"""Módulo principal que coordina los componentes de la aplicación RAG.""" 

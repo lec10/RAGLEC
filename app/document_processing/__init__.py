@@ -1,0 +1,1 @@
+"""Módulo para el procesamiento de documentos y generación de embeddings.""" 
