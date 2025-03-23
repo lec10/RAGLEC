@@ -10,6 +10,8 @@ RAGLEC es una aplicación de Retrieval Augmented Generation (RAG) que monitorea 
 - **Generación de Embeddings**: Utiliza el modelo text-embedding-3-small de OpenAI para generar embeddings de alta calidad.
 - **Consultas RAG**: Permite realizar consultas en lenguaje natural sobre el contenido de los documentos.
 - **Interfaz de Chat**: Proporciona una interfaz de línea de comandos para interactuar con el sistema.
+- **Documentación Completa**: Incluye documentación detallada en la carpeta `/docs` sobre la arquitectura, componentes y uso del sistema.
+- **Utilidades de Mantenimiento**: Scripts para gestionar la base de datos y solucionar problemas comunes.
 
 ## Requisitos
 
@@ -50,85 +52,130 @@ RAGLEC es una aplicación de Retrieval Augmented Generation (RAG) que monitorea 
 
 ### Supabase
 
-1. Crea una cuenta en [Supabase](https://supabase.com/)
-2. Crea un nuevo proyecto y habilita la extensión pgvector
-3. Crea una tabla para almacenar los documentos con la siguiente estructura:
-   ```sql
-   CREATE TABLE documents (
-     id TEXT PRIMARY KEY,
-     content TEXT,
-     metadata JSONB,
-     embedding VECTOR(1536),
-     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-   );
-   ```
-4. Crea una función para buscar documentos por similitud:
-   ```sql
-   CREATE OR REPLACE FUNCTION match_documents(
-     query_embedding VECTOR(1536),
-     match_threshold FLOAT,
-     match_count INT
-   )
-   RETURNS TABLE (
-     id TEXT,
-     content TEXT,
-     metadata JSONB,
-     similarity FLOAT
-   )
-   LANGUAGE plpgsql
-   AS $$
-   BEGIN
-     RETURN QUERY
-     SELECT
-       documents.id,
-       documents.content,
-       documents.metadata,
-       1 - (documents.embedding <=> query_embedding) AS similarity
-     FROM documents
-     WHERE 1 - (documents.embedding <=> query_embedding) > match_threshold
-     ORDER BY similarity DESC
-     LIMIT match_count;
-   END;
-   $$;
-   ```
-5. Añade la URL y la clave de Supabase a tu archivo `.env`:
-   ```
-   SUPABASE_URL=tu_url_de_supabase
-   SUPABASE_KEY=tu_clave_de_supabase
-   SUPABASE_COLLECTION_NAME=documents
-   ```
+1. Crea una cuenta en [Supabase](https://supabase.com/) si aún no tienes una
+2. Crea un nuevo proyecto
+3. Habilita la extensión pgvector:
+   - Vaya a la sección "Database" > "Extensions"
+   - Busque "vector" y habilítelo
+4. Obtenga la URL y la clave de API:
+   - Vaya a "Project Settings" > "API"
+   - Copie la URL del proyecto y la clave anon/public
+5. Añade estas credenciales a tu archivo `.env`:
 
-### Google Drive API
+```
+SUPABASE_URL=tu_url_de_supabase_aqui
+SUPABASE_KEY=tu_clave_api_aqui
+```
+
+### Configuración SQL de Supabase
+
+Una vez configurada tu cuenta de Supabase, debes ejecutar los siguientes scripts SQL para crear las tablas y funciones necesarias. Puedes hacerlo desde el Editor SQL en el panel de control de Supabase:
+
+1. **Crear tabla de documentos**:
+```sql
+CREATE TABLE IF NOT EXISTS documents (
+    id TEXT PRIMARY KEY,
+    content TEXT NOT NULL,
+    metadata JSONB,
+    embedding VECTOR(1536),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+2. **Crear tabla de archivos**:
+```sql
+CREATE TABLE IF NOT EXISTS files (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    mime_type TEXT,
+    source TEXT,
+    last_modified TIMESTAMP,
+    status TEXT,
+    chunk_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+3. **Crear tabla de consultas**:
+```sql
+CREATE TABLE IF NOT EXISTS queries (
+    id SERIAL PRIMARY KEY,
+    query TEXT NOT NULL,
+    response TEXT,
+    sources JSONB,
+    metadata JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+4. **Crear función de búsqueda por similitud**:
+```sql
+CREATE OR REPLACE FUNCTION match_documents(
+    query_embedding VECTOR(1536),
+    match_threshold FLOAT,
+    match_count INT
+)
+RETURNS TABLE (
+    id TEXT,
+    content TEXT,
+    metadata JSONB,
+    similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        documents.id,
+        documents.content,
+        documents.metadata,
+        1 - (documents.embedding <=> query_embedding) AS similarity
+    FROM documents
+    WHERE 1 - (documents.embedding <=> query_embedding) > match_threshold
+    ORDER BY similarity DESC
+    LIMIT match_count;
+END;
+$$;
+```
+
+5. **Crear índice para búsquedas más rápidas** (opcional pero recomendado):
+```sql
+CREATE INDEX ON documents 
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+```
+
+### Google Drive
 
 1. Crea un proyecto en [Google Cloud Console](https://console.cloud.google.com/)
 2. Habilita la API de Google Drive
-3. Crea una cuenta de servicio y descarga el archivo de credenciales JSON
-4. Añade la ruta al archivo de credenciales y el ID de la carpeta a monitorear a tu archivo `.env`:
-   ```
-   GOOGLE_APPLICATION_CREDENTIALS=ruta/a/tu/archivo-credenciales.json
-   GOOGLE_DRIVE_FOLDER_ID=id_de_la_carpeta_a_monitorear
-   ```
+3. Configura credenciales de acceso y descarga el archivo JSON
+4. Guarda el archivo en la carpeta `credentials/` del proyecto
+5. Añade la ruta al archivo `.env`:
+```
+GOOGLE_APPLICATION_CREDENTIALS=credentials/tu-archivo-credenciales.json
+```
+
+6. Configura el ID de la carpeta de Google Drive a monitorear:
+```
+GOOGLE_DRIVE_FOLDER_ID=id_de_carpeta_aqui
+```
 
 ## Uso
 
-### Procesar todos los documentos
+RAGLEC proporciona varios comandos a través del script principal `main.py`:
 
-Para procesar todos los documentos en la carpeta de Google Drive:
+### Procesar Documentos
+
+Para procesar documentos en la carpeta monitoreada de Google Drive:
 
 ```
 python main.py process
 ```
 
-### Iniciar el monitoreo
-
-Para iniciar el monitoreo de la carpeta de Google Drive:
-
-```
-python main.py monitor
-```
-
-### Iniciar la interfaz de chat
+### Interfaz de Chat
 
 Para iniciar la interfaz de chat y realizar consultas:
 
@@ -136,7 +183,14 @@ Para iniciar la interfaz de chat y realizar consultas:
 python main.py chat
 ```
 
-### Administrar la base de datos vectorial
+En la interfaz de chat, puedes usar los siguientes comandos:
+- Cualquier texto para realizar una consulta
+- `threshold [valor]`: Cambia el umbral de similitud (0-1)
+- `statistics`: Muestra estadísticas de documentos
+- `history [n]`: Muestra historial de consultas
+- `performance`: Muestra métricas de rendimiento
+
+### Administración de la Base de Datos
 
 Para administrar la base de datos vectorial, utiliza el siguiente comando:
 
@@ -163,39 +217,72 @@ Comandos disponibles:
   - `--documents`: Exportar documentos (fragmentos)
   - `-o, --output [file]`: Archivo de salida
 
-Ejemplos:
+### Utilidades
 
-```
-# Listar archivos en la base de datos
-python main.py admin list
+En la carpeta `utilities/` se incluyen scripts útiles para el mantenimiento del sistema:
 
-# Mostrar detalles de un archivo
-python main.py admin show abc123 --chunks
+- `clear_database.py`: Limpia las tablas de la base de datos
+  ```
+  python utilities/clear_database.py [opciones]
+  ```
+  Opciones:
+  - `--no-backup`: No crear backups antes de borrar
+  - `--no-confirm`: No solicitar confirmación
+  - `--tables [tabla1 tabla2]`: Especificar tablas a limpiar
 
-# Eliminar un archivo
-python main.py admin delete abc123
+## Parámetros Configurables
 
-# Exportar datos
-python main.py admin export --files --queries -o export_data.json
-```
+RAGLEC tiene varios parámetros configurables:
+
+### Procesamiento de Documentos
+- `CHUNK_SIZE`: Tamaño de los fragmentos (por defecto: 1000 caracteres)
+- `CHUNK_OVERLAP`: Superposición entre fragmentos (por defecto: 200 caracteres)
+
+### Generación de Embeddings
+- `OPENAI_EMBEDDING_MODEL`: Modelo para embeddings (por defecto: text-embedding-3-small)
+
+### Búsquedas por Similitud
+- `DEFAULT_SIMILARITY_THRESHOLD`: Umbral de similitud (por defecto: 0.1)
+- `DEFAULT_NUM_RESULTS`: Número de resultados (por defecto: 5)
 
 ## Estructura del Proyecto
 
 ```
 RAGLEC/
-├── app/
-│   ├── config/             # Configuración de la aplicación
-│   ├── core/               # Componentes principales
-│   ├── database/           # Gestión de la base de datos vectorial
-│   ├── document_processing/ # Procesamiento de documentos
-│   ├── drive/              # Integración con Google Drive
-│   ├── query/              # Sistema de consultas RAG
-│   └── utils/              # Utilidades
-├── .env.example            # Ejemplo de archivo de variables de entorno
-├── main.py                 # Script principal
-├── README.md               # Documentación
-└── requirements.txt        # Dependencias
+├── app/                            # Paquete principal de la aplicación
+│   ├── config/                     # Configuración de la aplicación
+│   ├── core/                       # Componentes centrales
+│   ├── database/                   # Gestión de la base de datos vectorial
+│   ├── document_processing/        # Procesamiento de documentos
+│   ├── drive/                      # Integración con Google Drive
+│   ├── query/                      # Sistema de consultas RAG
+│   └── utils/                      # Utilidades
+├── docs/                           # Documentación detallada del sistema
+│   ├── architecture/               # Arquitectura y diseño
+│   ├── modules/                    # Documentación de módulos
+│   ├── guides/                     # Guías de usuario
+│   ├── api/                        # Documentación de API
+│   ├── maintenance/                # Mantenimiento y solución de problemas
+│   └── overview.md                 # Visión general del sistema
+├── tests/                          # Pruebas automatizadas
+├── utilities/                      # Scripts de utilidad y mantenimiento
+├── .env.example                    # Ejemplo de archivo de variables de entorno
+├── main.py                         # Script principal
+├── README.md                       # Documentación
+└── requirements.txt                # Dependencias
 ```
+
+Para una descripción detallada de cada componente, consulta la [documentación completa](docs/overview.md).
+
+## Documentación
+
+La documentación completa del sistema se encuentra en la carpeta `/docs`. Incluye:
+
+- Descripción detallada de la arquitectura
+- Explicación de cada módulo y sus componentes
+- Guías de instalación y uso
+- Solución de problemas comunes
+- Consideraciones de rendimiento y optimización
 
 ## Licencia
 

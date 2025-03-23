@@ -426,5 +426,260 @@
         "rank": 5
       }
     ]
+  },
+  {
+    "question": "cuales son las 5 industrias para arrancar?",
+    "response": "No tengo suficiente información para responder a esta pregunta.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.462010768771821,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.448183835555748,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.441553950309766,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.435705799288595,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "aaafe76c07d2a9f24d2426adeadd4902",
+        "chunk_index": 15,
+        "total_chunks": 28,
+        "similarity": 0.435389451430974,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuales serian las primeras 5 industrias?",
+    "response": "No tengo suficiente información para responder a esta pregunta.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.456593402712559,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.422689084846433,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.421249339431606,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.405452037182573,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.379663779775648,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuales serian las primeras 5 industrias?",
+    "response": "No tengo suficiente información para responder a esta pregunta.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.456564494455535,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.422777269913122,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.421234199853638,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.405598128175625,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.379714294706074,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuales son las industrias que podrian ser atractivas para la IA?",
+    "response": "Las industrias que podrían ser atractivas para la IA, según el contexto proporcionado, incluyen:\n\n1. **Salud**: Esta industria tiene una gran cantidad de datos y un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17 de 28).\n\n2. **Finanzas**: Se caracteriza por una alta madurez digital y una fuerte adopción de IA para análisis predictivo, gestión de riesgos y personalización (Documento 1, Fragmento 17 de 28).\n\nAdemás, se sugiere que las industrias deben cumplir con ciertos criterios, como el tamaño y crecimiento del mercado, la disponibilidad de datos, el nivel de adopción tecnológica y la competencia existente, para ser consideradas atractivas para la implementación de soluciones de IA (Documentos 3, 4 y 5).",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.713655944174987,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.668443839179005,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.648972788391904,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.637910106057559,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.613116337432442,
+        "rank": 5
+      }
+    ]
+  },
+  {
+    "question": "cuales son las 5 industrias que podrian ser atractivas para la IA?",
+    "response": "Las industrias que podrían ser atractivas para la IA, según el contexto proporcionado, son:\n\n1. **Salud**: Se menciona que esta industria tiene una gran cantidad de datos y un alto impacto potencial en el diagnóstico, tratamiento y administración de servicios (Documento 1, Fragmento 17).\n\n2. **Finanzas**: Se destaca que la industria financiera tiene una alta madurez digital y una fuerte adopción de IA para análisis predictivo, riesgo y personalización (Documento 1, Fragmento 17).\n\nNo tengo suficiente información para identificar tres industrias adicionales, ya que el contexto solo menciona estas dos específicamente.",
+    "sources": [
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "7dc49165ddb25e72260d2de13da79581",
+        "chunk_index": 16,
+        "total_chunks": 28,
+        "similarity": 0.679356320885406,
+        "rank": 1
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "3e793523ca16569806dfdfcdd523fcd7",
+        "chunk_index": 14,
+        "total_chunks": 28,
+        "similarity": 0.64768496696591,
+        "rank": 2
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "8103f560c90545532e17ad0942787ed2",
+        "chunk_index": 10,
+        "total_chunks": 28,
+        "similarity": 0.632350720903348,
+        "rank": 3
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "d38f018f221f9d499cc3d4dcfc43cc78",
+        "chunk_index": 13,
+        "total_chunks": 28,
+        "similarity": 0.612996770500769,
+        "rank": 4
+      },
+      {
+        "file_name": "AA Main document Proyecto AI.pdf",
+        "file_id": "1UVkoJj_YlwZzQIjFXP47yzu0U95Cmbhy",
+        "chunk_id": "439fc3f5c0c3c6fa737427fa4de4cee7",
+        "chunk_index": 11,
+        "total_chunks": 28,
+        "similarity": 0.607495940178418,
+        "rank": 5
+      }
+    ]
   }
 ]
