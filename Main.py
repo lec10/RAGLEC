@@ -17,17 +17,32 @@ from app.query.chat_interface import CommandLineChatInterface
 from app.config.settings import OPENAI_API_KEY, SUPABASE_URL, SUPABASE_KEY, GOOGLE_APPLICATION_CREDENTIALS
 from app.database.admin_cli import main as admin_main
 
-# Configurar logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("rag_app.log"),
-        logging.StreamHandler()
-    ]
-)
+# Configurar logging de manera más robusta
+# Primero eliminar cualquier handler existente
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
 
+# Configurar formato
+log_format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+# Configurar handler para archivo
+file_handler = logging.FileHandler("rag_app.log", mode='a')
+file_handler.setFormatter(log_format)
+
+# Configurar handler para consola
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_format)
+
+# Configurar logger raíz
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+root_logger.addHandler(file_handler)
+root_logger.addHandler(console_handler)
+
+# Obtener logger específico
 logger = logging.getLogger(__name__)
+logger.info("=== INICIO DE SESIÓN ===")
+logger.info("Logger configurado para escribir en: {}".format(os.path.abspath("rag_app.log")))
 
 def check_environment():
     """Verifica que las variables de entorno necesarias estén configuradas."""

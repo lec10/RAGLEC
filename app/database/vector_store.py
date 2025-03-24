@@ -30,48 +30,54 @@ class VectorDatabase:
         self.supabase = self.supabase_store.get_client()
         logger.info(f"Base de datos vectorial inicializada con colección: {self.collection_name}")
         
-    def add_document(self, doc_id: str, content: str, metadata: Dict[str, Any], embedding: List[float]) -> bool:
-        """Añade un documento a la base de datos.
+    def add_document(self, document_id: str, content: str, metadata: dict, embedding: List[float]) -> bool:
+        """Añade un documento a la base de datos vectorial.
         
         Args:
-            doc_id: Identificador único del documento.
+            document_id: ID único del documento.
             content: Contenido del documento.
             metadata: Metadatos del documento.
             embedding: Vector de embedding del documento.
             
         Returns:
-            bool: True si se añadió correctamente, False en caso contrario.
+            bool: True si se agregó correctamente, False en caso contrario.
         """
         try:
+            # Formatear el metadato en formato JSON para almacenamiento
+            file_id = metadata.get("file_id", "")
+            chunk_index = metadata.get("chunk_index", "")
+            
+            # Preparar los metadatos para almacenamiento
+            metadata_json = json.dumps(metadata)
+            
             # Verificar si el documento ya existe
-            existing_doc = self.supabase.table(self.collection_name).select("*").eq("id", doc_id).execute()
+            response = self.supabase.table(self.collection_name).select("*").eq("id", document_id).execute()
             
-            if existing_doc.data:
-                logger.info(f"El documento {doc_id} ya existe, actualizando...")
-                return self.update_document(doc_id, content, metadata, embedding)
+            if response.data and len(response.data) > 0:
+                # Actualizar el documento existente
+                logger.info(f"Actualizando fragmento existente {chunk_index} de archivo {file_id}")
+                response = self.supabase.table(self.collection_name).update({
+                    "content": content,
+                    "metadata": metadata_json,
+                    "embedding": embedding
+                }).eq("id", document_id).execute()
+            else:
+                # Insertar nuevo documento
+                logger.info(f"Insertando nuevo fragmento {chunk_index} de archivo {file_id}")
+                response = self.supabase.table(self.collection_name).insert({
+                    "id": document_id,
+                    "content": content,
+                    "metadata": metadata_json,
+                    "embedding": embedding
+                }).execute()
             
-            # Preparar el documento
-            document = {
-                "id": doc_id,
-                "content": content,
-                "metadata": metadata,
-                "embedding": embedding,
-                "created_at": datetime.now().isoformat(),
-                "updated_at": datetime.now().isoformat()
-            }
+            # Actualizar o crear el registro de archivo en la tabla 'files'
+            self._update_file_record(metadata)
             
-            # Insertar el documento
-            result = self.supabase.table(self.collection_name).insert(document).execute()
-            
-            # Actualizar el registro del archivo si es un fragmento de Google Drive
-            if metadata.get("source") == "google_drive" and metadata.get("file_id"):
-                self._update_or_create_file_record(metadata)
-            
-            logger.info(f"Documento {doc_id} añadido correctamente")
+            logger.debug(f"Documento {document_id} (fragmento {chunk_index}) añadido correctamente")
             return True
-            
         except Exception as e:
-            logger.error(f"Error al añadir el documento {doc_id}: {e}")
+            logger.error(f"Error al añadir el documento {document_id}: {e}")
             return False
     
     def update_document(self, doc_id: str, content: str, metadata: Dict[str, Any], embedding: List[float]) -> bool:
@@ -202,15 +208,20 @@ class VectorDatabase:
             int: Número de fragmentos eliminados.
         """
         try:
-            # Usar la función RPC para eliminar los fragmentos
-            result = self.supabase.rpc(
-                "delete_chunks_by_file_id",
-                {"file_id": file_id}
-            ).execute()
+            # Primero contar cuántos fragmentos hay
+            result = self.supabase.table(self.collection_name).select("id").filter("metadata->>file_id", "eq", file_id).execute()
             
-            deleted_count = result.data
-            logger.info(f"Fragmentos eliminados para el archivo {file_id}: {deleted_count}")
-            return deleted_count
+            count = len(result.data) if result.data else 0
+            
+            if count == 0:
+                logger.info(f"No se encontraron fragmentos para el archivo {file_id}")
+                return 0
+                
+            # Luego eliminar los fragmentos
+            result = self.supabase.table(self.collection_name).delete().filter("metadata->>file_id", "eq", file_id).execute()
+            
+            logger.info(f"Se eliminaron {count} fragmentos del archivo {file_id}")
+            return count
             
         except Exception as e:
             logger.error(f"Error al eliminar fragmentos del archivo {file_id}: {e}")
@@ -230,37 +241,88 @@ class VectorDatabase:
             if not file_id:
                 return False
             
+            chunk_index = metadata.get("chunk_index", "")
+            
             # Verificar si el archivo ya existe
             existing_file = self.supabase.table("files").select("*").eq("id", file_id).execute()
             
             file_data = {
-                "name": metadata.get("file_name", "Unknown"),
+                "name": metadata.get("name", "Unknown"),
                 "mime_type": metadata.get("mime_type", "application/octet-stream"),
                 "source": metadata.get("source", "google_drive"),
-                "last_modified": metadata.get("last_modified", datetime.now().isoformat()),
+                "last_modified": metadata.get("modified_time", datetime.now().isoformat()),
                 "processed_at": datetime.now().isoformat(),
                 "status": "processed",
-                "metadata": {
+                "metadata": json.dumps({
                     "total_chunks": metadata.get("total_chunks", 1),
                     "size": metadata.get("size", 0),
                     "checksum": metadata.get("checksum", "")
-                }
+                })
             }
             
             if existing_file.data:
                 # Actualizar el archivo existente
                 result = self.supabase.table("files").update(file_data).eq("id", file_id).execute()
-                logger.info(f"Registro de archivo {file_id} actualizado")
+                logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) actualizado")
             else:
                 # Crear un nuevo registro de archivo
                 file_data["id"] = file_id
                 result = self.supabase.table("files").insert(file_data).execute()
-                logger.info(f"Registro de archivo {file_id} creado")
+                logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) creado")
             
             return True
             
         except Exception as e:
-            logger.error(f"Error al actualizar/crear registro de archivo: {e}")
+            logger.error(f"Error al actualizar registro de archivo: {e}")
+            return False
+    
+    def _update_file_record(self, metadata: Dict[str, Any]) -> bool:
+        """Actualiza o crea un registro de archivo.
+        
+        Args:
+            metadata: Metadatos del fragmento.
+            
+        Returns:
+            bool: True si se actualizó o creó correctamente, False en caso contrario.
+        """
+        try:
+            file_id = metadata.get("file_id")
+            if not file_id:
+                return False
+            
+            chunk_index = metadata.get("chunk_index", "")
+            
+            # Verificar si el archivo ya existe
+            existing_file = self.supabase.table("files").select("*").eq("id", file_id).execute()
+            
+            file_data = {
+                "name": metadata.get("name", "Unknown"),
+                "mime_type": metadata.get("mime_type", "application/octet-stream"),
+                "source": metadata.get("source", "google_drive"),
+                "last_modified": metadata.get("modified_time", datetime.now().isoformat()),
+                "processed_at": datetime.now().isoformat(),
+                "status": "processed",
+                "metadata": json.dumps({
+                    "total_chunks": metadata.get("total_chunks", 1),
+                    "size": metadata.get("size", 0),
+                    "checksum": metadata.get("checksum", "")
+                })
+            }
+            
+            if existing_file.data:
+                # Actualizar el archivo existente
+                result = self.supabase.table("files").update(file_data).eq("id", file_id).execute()
+                logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) actualizado")
+            else:
+                # Crear un nuevo registro de archivo
+                file_data["id"] = file_id
+                result = self.supabase.table("files").insert(file_data).execute()
+                logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) creado")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error al actualizar registro de archivo: {e}")
             return False
     
     def log_query(self, query: str, response: str, sources: List[Dict[str, Any]]) -> bool:
