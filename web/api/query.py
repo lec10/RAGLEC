@@ -30,9 +30,29 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 # Configuración global
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 DEFAULT_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-MAX_RESPONSE_TIME = 15.0  # Reducimos el tiempo máximo de respuesta
+MAX_RESPONSE_TIME = 15.0  # Tiempo máximo de respuesta
 
-class handler(BaseHTTPRequestHandler):
+# Función para formatear las fuentes de manera segura
+def formatSources(sources):
+    formatted_sources = []
+    
+    for index, source in enumerate(sources):
+        if not isinstance(source, dict):
+            logger.error(f"Fuente no es un diccionario: {type(source)}")
+            continue
+            
+        formatted_sources.append({
+            'content': source.get('content', 'Contenido no disponible'),
+            'file_name': source.get('file_name', 'Desconocido'),
+            'file_id': source.get('file_id', ''),
+            'chunk_index': source.get('chunk_index', 0),
+            'total_chunks': source.get('total_chunks', 0),
+            'similarity': source.get('similarity', 0)
+        })
+    
+    return formatted_sources
+
+class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -391,24 +411,5 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
             "metadata": {
                 "query_steps": query_steps
             }
-        } 
+        }
 
-# Función para formatear las fuentes de manera segura
-def formatSources(sources):
-    formatted_sources = []
-    
-    for index, source in enumerate(sources):
-        if not isinstance(source, dict):
-            logger.error(f"Fuente no es un diccionario: {type(source)}")
-            continue
-            
-        formatted_sources.append({
-            'content': source.get('content', 'Contenido no disponible'),
-            'file_name': source.get('file_name', 'Desconocido'),
-            'file_id': source.get('file_id', ''),
-            'chunk_index': source.get('chunk_index', 0),
-            'total_chunks': source.get('total_chunks', 0),
-            'similarity': source.get('similarity', 0)
-        })
-    
-    return formatted_sources 
