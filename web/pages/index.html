@@ -3,46 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAGLEC - Sistema de Consulta Inteligente</title>
+    <title>RAGLEC - Consulta de Documentos</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>RAGLEC</h1>
-            <p>Sistema de Recuperación Aumentada de Generación para consulta de documentos</p>
-        </header>
-
-        <main>
-            <div class="query-section">
-                <h2><i class="fas fa-search"></i> Consulta Inteligente</h2>
-                <p class="instructions">Escribe tu pregunta y el sistema buscará información relevante en la base de conocimiento para brindarte una respuesta precisa.</p>
-                <textarea id="query-input" placeholder="¿Qué deseas consultar hoy?"></textarea>
-                <button id="send-button"><i class="fas fa-paper-plane"></i> Enviar consulta</button>
-
-                <div id="loading" class="hidden">
-                    <div class="spinner"></div>
-                    <p>Procesando consulta, por favor espera...</p>
+    <!-- Panel lateral del historial -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <button id="new-chat" class="new-chat-button">
+                <i class="fas fa-plus"></i>
+                <span>Nueva consulta</span>
+            </button>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3>Recientes</h3>
+            <ul id="recent-chats" class="chat-list">
+                <!-- Se rellenará dinámicamente con el historial de chats -->
+            </ul>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>RAGLEC - Sistema Inteligente</span>
+            </div>
+        </div>
+    </aside>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-left">
+                <button id="menu-toggle" class="menu-button" title="Menú">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="logo">
+                    <h1>RAGLEC</h1>
+                    <span class="model-name">Sistema RAG</span>
                 </div>
             </div>
-
-            <div class="response-section">
-                <h2><i class="fas fa-robot"></i> Respuesta</h2>
-                <div id="response-content" class="response-placeholder">Aquí aparecerá la respuesta a tu consulta</div>
-
-                <div class="sources-section">
-                    <h3><i class="fas fa-book"></i> Fuentes</h3>
-                    <div id="sources-content" class="sources-placeholder">Las fuentes utilizadas se mostrarán aquí</div>
+            <div class="header-controls">
+                <button id="theme-toggle" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+        
+        <main class="chat-container">
+            <div class="welcome-message">
+                <h2>Bienvenido a RAGLEC</h2>
+                <p>Haz una pregunta sobre la base de conocimiento y te ayudaré a encontrar información relevante.</p>
+            </div>
+            
+            <div id="chat-messages">
+                <!-- Aquí se agregarán dinámicamente los mensajes -->
+            </div>
+            
+            <div id="loading" class="loading-container hidden">
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
                 </div>
+                <p>Buscando información relevante...</p>
             </div>
         </main>
-
-        <footer>
-            <p>Powered by RAGLEC &copy; 2024</p>
+        
+        <footer class="input-container">
+            <textarea id="query-input" placeholder="Escribe tu consulta aquí..." rows="1"></textarea>
+            <div class="input-buttons">
+                <button id="clear-button" title="Limpiar conversación">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button id="send-button" title="Enviar consulta">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
         </footer>
     </div>
-
+    
+    <!-- Overlay para cerrar el sidebar en móviles -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    
+    <!-- Template para mensajes (oculto) -->
+    <template id="user-message-template">
+        <div class="message user-message">
+            <div class="message-content"></div>
+        </div>
+    </template>
+    
+    <template id="assistant-message-template">
+        <div class="message assistant-message">
+            <div class="message-content"></div>
+            <div class="message-sources">
+                <div class="sources-heading">
+                    <button class="toggle-sources">
+                        <i class="fas fa-book"></i> 
+                        <span>Fuentes</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="sources-content hidden"></div>
+            </div>
+            <div class="message-actions">
+                <button class="action-button" title="Me gusta">
+                    <i class="far fa-thumbs-up"></i>
+                </button>
+                <button class="action-button" title="No me gusta">
+                    <i class="far fa-thumbs-down"></i>
+                </button>
+                <button class="action-button" title="Copiar">
+                    <i class="far fa-copy"></i>
+                </button>
+                <button class="action-button" title="Más opciones">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+            </div>
+        </div>
+    </template>
+    
+    <template id="thinking-template">
+        <div class="thinking-section">
+            <div class="thinking-header">
+                <button class="toggle-thinking">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Mostrar proceso de análisis</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+            <div class="thinking-content hidden"></div>
+        </div>
+    </template>
+    
+    <!-- Template para un elemento del historial de chats -->
+    <template id="chat-history-item-template">
+        <li class="chat-item">
+            <button class="chat-item-button">
+                <i class="fas fa-comments"></i>
+                <span class="chat-title"></span>
+            </button>
+        </li>
+    </template>
+    
     <script src="/js/main.js"></script>
 </body>
 </html> 

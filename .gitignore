@@ -62,3 +62,4 @@ $RECYCLE.BIN/
 # Archivos específicos de RAGLEC
 conversation_history.json
 rag_app.log 
+.vercel

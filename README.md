@@ -10,6 +10,7 @@ RAGLEC es una aplicación de Retrieval Augmented Generation (RAG) que monitorea 
 - **Generación de Embeddings**: Utiliza el modelo text-embedding-3-small de OpenAI para generar embeddings de alta calidad.
 - **Consultas RAG**: Permite realizar consultas en lenguaje natural sobre el contenido de los documentos.
 - **Interfaz de Chat**: Proporciona una interfaz de línea de comandos para interactuar con el sistema.
+- **Interfaz Web**: Incluye una interfaz web para realizar consultas al sistema mediante un navegador.
 - **Documentación Completa**: Incluye documentación detallada en la carpeta `/docs` sobre la arquitectura, componentes y uso del sistema.
 - **Utilidades de Mantenimiento**: Scripts para gestionar la base de datos y solucionar problemas comunes.
 
@@ -216,6 +217,30 @@ Comandos disponibles:
   - `--queries`: Exportar consultas
   - `--documents`: Exportar documentos (fragmentos)
   - `-o, --output [file]`: Archivo de salida
+
+### Interfaz Web
+
+Para iniciar la interfaz web localmente:
+
+```
+cd web
+python -m http.server 8000
+```
+
+La interfaz web también puede ser desplegada en Vercel:
+
+1. Crea una cuenta en [Vercel](https://vercel.com) si aún no tienes una
+2. Instala la CLI de Vercel:
+   ```
+   npm install -g vercel
+   ```
+3. Navega a la carpeta web y despliega:
+   ```
+   cd web
+   vercel
+   ```
+
+Una vez desplegada, podrás acceder a la interfaz web a través de la URL proporcionada por Vercel.
 
 ### Utilidades
 
