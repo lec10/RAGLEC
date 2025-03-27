@@ -14963,3 +14963,37 @@
 2025-03-23 16:21:58,790 - app.core.document_manager - INFO - Archivo sin cambios: AA Main document Proyecto AI.pdf (mismo checksum)
 2025-03-23 16:21:58,790 - app.core.document_manager - INFO - Procesamiento de todos los archivos completado correctamente
 2025-03-23 16:21:58,790 - __main__ - INFO - Procesamiento de documentos completado
+2025-03-27 08:38:20,046 - __main__ - INFO - === INICIO DE SESIÓN ===
+2025-03-27 08:38:20,047 - __main__ - INFO - Logger configurado para escribir en: C:\Users\Lec\Desktop\code\RAGLEC\rag_app.log
+2025-03-27 08:38:20,050 - __main__ - INFO - Iniciando procesamiento de todos los documentos...
+2025-03-27 08:38:20,090 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-27 08:38:20,102 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-27 08:38:20,103 - app.document_processing.document_loader - INFO - Procesador de documentos inicializado con chunk_size=3000, chunk_overlap=400
+2025-03-27 08:38:20,574 - app.document_processing.embeddings - INFO - Generador de embeddings inicializado con el modelo text-embedding-3-small
+2025-03-27 08:38:20,781 - app.database.supabase_client - INFO - Cliente de Supabase inicializado
+2025-03-27 08:38:20,781 - app.database.vector_store - INFO - Base de datos vectorial inicializada con colección: documents
+2025-03-27 08:38:20,810 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-27 08:38:20,811 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-27 08:38:20,812 - app.drive.folder_monitor - INFO - Monitor de carpetas inicializado para la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-27 08:38:20,812 - app.drive.folder_monitor - INFO - Callback registrado para el evento new_file
+2025-03-27 08:38:20,812 - app.drive.folder_monitor - INFO - Callback registrado para el evento modified_file
+2025-03-27 08:38:20,812 - app.drive.folder_monitor - INFO - Callback registrado para el evento deleted_file
+2025-03-27 08:38:20,813 - app.core.document_manager - INFO - Gestor de documentos inicializado
+2025-03-27 08:38:21,761 - app.drive.google_drive_client - INFO - Se encontraron 1 archivos en la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-27 08:38:21,762 - app.core.document_manager - INFO - Se encontraron 1 archivos en Google Drive
+2025-03-27 08:38:23,311 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A "HTTP/2 200 OK"
+2025-03-27 08:38:23,314 - app.core.document_manager - INFO - Se encontraron 2 archivos en la base de datos
+2025-03-27 08:38:23,314 - app.core.document_manager - INFO - Procesando 1 archivos eliminados...
+2025-03-27 08:38:23,314 - app.core.document_manager - INFO - Eliminando archivo: DICCIONARIO-Quechua-espanol-VOL_2.pdf (1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t)
+2025-03-27 08:38:23,314 - app.core.document_manager - INFO - Procesando archivo eliminado: DICCIONARIO-Quechua-espanol-VOL_2.pdf (1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t)
+2025-03-27 08:38:23,572 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t "HTTP/2 200 OK"
+2025-03-27 08:38:23,824 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=id&metadata-%3E%3Efile_id=eq.1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t "HTTP/2 200 OK"
+2025-03-27 08:38:23,825 - app.database.vector_store - INFO - No se encontraron fragmentos para el archivo 1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t
+2025-03-27 08:38:23,825 - app.core.document_manager - INFO - Se eliminaron 0 fragmentos del archivo 1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t
+2025-03-27 08:38:24,485 - httpx - INFO - HTTP Request: DELETE https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t "HTTP/2 200 OK"
+2025-03-27 08:38:24,485 - app.core.document_manager - INFO - Se eliminó el registro del archivo DICCIONARIO-Quechua-espanol-VOL_2.pdf (1MEeyNzKClF_YybVxKK_0fzKsHdMZJR8t) de la tabla 'files': 1 registros afectados
+2025-03-27 08:38:24,486 - app.core.document_manager - INFO - Procesamiento de archivos eliminados completado
+2025-03-27 08:38:24,486 - app.core.document_manager - INFO - Procesando 1 archivos actuales...
+2025-03-27 08:38:24,486 - app.core.document_manager - INFO - Archivo sin cambios: AA Main document Proyecto AI.pdf (mismo checksum)
+2025-03-27 08:38:24,487 - app.core.document_manager - INFO - Procesamiento de todos los archivos completado correctamente
+2025-03-27 08:38:24,487 - __main__ - INFO - Procesamiento de documentos completado

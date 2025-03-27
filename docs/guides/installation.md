@@ -159,8 +159,8 @@ Esto iniciará la interfaz de chat en línea de comandos donde podrá realizar c
 Si desea ajustar el tamaño de los fragmentos en los que se dividen los documentos, puede modificar estas variables en su archivo `.env`:
 
 ```
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
+CHUNK_SIZE=3000
+CHUNK_OVERLAP=400
 ```
 
 ### Configurar Nivel de Logging

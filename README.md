@@ -260,8 +260,8 @@ En la carpeta `utilities/` se incluyen scripts útiles para el mantenimiento del
 RAGLEC tiene varios parámetros configurables:
 
 ### Procesamiento de Documentos
-- `CHUNK_SIZE`: Tamaño de los fragmentos (por defecto: 1000 caracteres)
-- `CHUNK_OVERLAP`: Superposición entre fragmentos (por defecto: 200 caracteres)
+- `CHUNK_SIZE`: Tamaño de los fragmentos (por defecto: 3000 caracteres)
+- `CHUNK_OVERLAP`: Superposición entre fragmentos (por defecto: 400 caracteres)
 
 ### Generación de Embeddings
 - `OPENAI_EMBEDDING_MODEL`: Modelo para embeddings (por defecto: text-embedding-3-small)

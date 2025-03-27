@@ -209,23 +209,77 @@ class VectorDatabase:
         """
         try:
             # Primero contar cuántos fragmentos hay
-            result = self.supabase.table(self.collection_name).select("id").filter("metadata->>file_id", "eq", file_id).execute()
+            result = self.supabase.table(self.collection_name).select("id").filter("metadata->>'file_id'", "eq", file_id).execute()
             
             count = len(result.data) if result.data else 0
             
             if count == 0:
                 logger.info(f"No se encontraron fragmentos para el archivo {file_id}")
                 return 0
-                
-            # Luego eliminar los fragmentos
-            result = self.supabase.table(self.collection_name).delete().filter("metadata->>file_id", "eq", file_id).execute()
             
-            logger.info(f"Se eliminaron {count} fragmentos del archivo {file_id}")
-            return count
+            # Si hay muchos fragmentos, eliminar en lotes para evitar timeout
+            if count > 100:
+                logger.info(f"Eliminando {count} fragmentos en lotes...")
+                deleted_count = 0
+                
+                # Obtener todos los IDs primero
+                all_ids = [doc['id'] for doc in result.data]
+                
+                # Eliminar en lotes de 50
+                batch_size = 50
+                for i in range(0, len(all_ids), batch_size):
+                    batch = all_ids[i:i+batch_size]
+                    for chunk_id in batch:
+                        # Eliminar un fragmento a la vez
+                        self.supabase.table(self.collection_name).delete().eq("id", chunk_id).execute()
+                        deleted_count += 1
+                    logger.info(f"Eliminados {deleted_count}/{count} fragmentos...")
+                
+                logger.info(f"Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
+                return deleted_count
+            else:
+                # Eliminar los fragmentos en una sola operación
+                result = self.supabase.table(self.collection_name).delete().filter("metadata->>'file_id'", "eq", file_id).execute()
+                deleted_count = len(result.data) if result.data else count
+                logger.info(f"Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
+                return deleted_count
             
         except Exception as e:
             logger.error(f"Error al eliminar fragmentos del archivo {file_id}: {e}")
-            return 0
+            logger.error(f"Detalles: {str(e)}")
+            # Intentar un enfoque alternativo si el primero falla
+            try:
+                # Obtener todos los IDs primero
+                ids_result = self.supabase.table(self.collection_name).select("id").execute()
+                all_chunks = ids_result.data if ids_result.data else []
+                
+                # Aplicar filtro manualmente
+                deleted_count = 0
+                for chunk in all_chunks:
+                    chunk_id = chunk.get('id')
+                    # Obtener el fragmento completo
+                    detail = self.supabase.table(self.collection_name).select("metadata").eq("id", chunk_id).execute()
+                    if not detail.data:
+                        continue
+                    
+                    metadata = detail.data[0].get('metadata', '{}')
+                    if isinstance(metadata, str):
+                        try:
+                            metadata = json.loads(metadata)
+                        except:
+                            metadata = {}
+                    
+                    # Verificar si el fragmento pertenece al archivo
+                    if metadata.get('file_id') == file_id:
+                        # Eliminar el fragmento
+                        self.supabase.table(self.collection_name).delete().eq("id", chunk_id).execute()
+                        deleted_count += 1
+                
+                logger.info(f"Método alternativo: Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
+                return deleted_count
+            except Exception as backup_error:
+                logger.error(f"Error en método alternativo: {str(backup_error)}")
+                return 0
     
     def _update_or_create_file_record(self, metadata: Dict[str, Any]) -> bool:
         """Actualiza o crea un registro de archivo.
