@@ -43,7 +43,7 @@ class VectorDatabase:
             bool: True si se agregó correctamente, False en caso contrario.
         """
         try:
-            # Formatear el metadato en formato JSON para almacenamiento
+            # Obtener el file_id de los metadatos
             file_id = metadata.get("file_id", "")
             chunk_index = metadata.get("chunk_index", "")
             
@@ -59,7 +59,8 @@ class VectorDatabase:
                 response = self.supabase.table(self.collection_name).update({
                     "content": content,
                     "metadata": metadata_json,
-                    "embedding": embedding
+                    "embedding": embedding,
+                    "file_id": file_id  # Usar la nueva columna file_id
                 }).eq("id", document_id).execute()
             else:
                 # Insertar nuevo documento
@@ -68,7 +69,8 @@ class VectorDatabase:
                     "id": document_id,
                     "content": content,
                     "metadata": metadata_json,
-                    "embedding": embedding
+                    "embedding": embedding,
+                    "file_id": file_id  # Usar la nueva columna file_id
                 }).execute()
             
             # Actualizar o crear el registro de archivo en la tabla 'files'
@@ -208,77 +210,55 @@ class VectorDatabase:
             int: Número de fragmentos eliminados.
         """
         try:
-            # Primero contar cuántos fragmentos hay
-            result = self.supabase.table(self.collection_name).select("id").filter("metadata->>'file_id'", "eq", file_id).execute()
+            # Intentar eliminar usando la columna file_id directamente (método preferido)
+            logger.info(f"Eliminando fragmentos de la tabla 'documents' para archivo: {file_id} usando columna file_id")
             
+            # Primero contar cuántos fragmentos hay
+            result = self.supabase.table(self.collection_name).select("id").eq("file_id", file_id).execute()
+            count = len(result.data) if result.data else 0
+            
+            if count > 0:
+                # Eliminar los fragmentos
+                result = self.supabase.table(self.collection_name).delete().eq("file_id", file_id).execute()
+                deleted_count = len(result.data) if result.data else 0
+                logger.info(f"Se eliminaron {deleted_count} fragmentos de la tabla 'documents' usando columna file_id")
+                return deleted_count
+            else:
+                logger.info("No se encontraron fragmentos en tabla 'documents' usando columna file_id, intentando con metadata")
+            
+            # Método alternativo: intentar con metadata->>'file_id'
+            result = self.supabase.table(self.collection_name).select("id").filter("metadata->>'file_id'", "eq", file_id).execute()
             count = len(result.data) if result.data else 0
             
             if count == 0:
-                logger.info(f"No se encontraron fragmentos para el archivo {file_id}")
+                logger.info(f"No se encontraron fragmentos en la tabla 'documents' para el archivo {file_id}")
                 return 0
             
-            # Si hay muchos fragmentos, eliminar en lotes para evitar timeout
-            if count > 100:
-                logger.info(f"Eliminando {count} fragmentos en lotes...")
-                deleted_count = 0
-                
-                # Obtener todos los IDs primero
-                all_ids = [doc['id'] for doc in result.data]
-                
-                # Eliminar en lotes de 50
-                batch_size = 50
-                for i in range(0, len(all_ids), batch_size):
-                    batch = all_ids[i:i+batch_size]
-                    for chunk_id in batch:
-                        # Eliminar un fragmento a la vez
-                        self.supabase.table(self.collection_name).delete().eq("id", chunk_id).execute()
-                        deleted_count += 1
-                    logger.info(f"Eliminados {deleted_count}/{count} fragmentos...")
-                
-                logger.info(f"Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
-                return deleted_count
-            else:
-                # Eliminar los fragmentos en una sola operación
-                result = self.supabase.table(self.collection_name).delete().filter("metadata->>'file_id'", "eq", file_id).execute()
-                deleted_count = len(result.data) if result.data else count
-                logger.info(f"Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
-                return deleted_count
+            # Eliminar los fragmentos
+            result = self.supabase.table(self.collection_name).delete().filter("metadata->>'file_id'", "eq", file_id).execute()
+            deleted_count = len(result.data) if result.data else count
+            logger.info(f"Se eliminaron {deleted_count} fragmentos de la tabla 'documents' usando metadata->>'file_id'")
             
+            return deleted_count
+        
         except Exception as e:
-            logger.error(f"Error al eliminar fragmentos del archivo {file_id}: {e}")
-            logger.error(f"Detalles: {str(e)}")
-            # Intentar un enfoque alternativo si el primero falla
+            logger.error(f"Error al eliminar fragmentos de la tabla 'documents': {e}")
+            
+            # Plan C: Usar la función SQL directamente
             try:
-                # Obtener todos los IDs primero
-                ids_result = self.supabase.table(self.collection_name).select("id").execute()
-                all_chunks = ids_result.data if ids_result.data else []
+                logger.info("Intentando con función RPC delete_chunks_by_file_id para eliminar de la tabla 'documents'")
+                result = self.supabase.rpc(
+                    "delete_chunks_by_file_id", 
+                    {"file_id": file_id}
+                ).execute()
                 
-                # Aplicar filtro manualmente
-                deleted_count = 0
-                for chunk in all_chunks:
-                    chunk_id = chunk.get('id')
-                    # Obtener el fragmento completo
-                    detail = self.supabase.table(self.collection_name).select("metadata").eq("id", chunk_id).execute()
-                    if not detail.data:
-                        continue
-                    
-                    metadata = detail.data[0].get('metadata', '{}')
-                    if isinstance(metadata, str):
-                        try:
-                            metadata = json.loads(metadata)
-                        except:
-                            metadata = {}
-                    
-                    # Verificar si el fragmento pertenece al archivo
-                    if metadata.get('file_id') == file_id:
-                        # Eliminar el fragmento
-                        self.supabase.table(self.collection_name).delete().eq("id", chunk_id).execute()
-                        deleted_count += 1
-                
-                logger.info(f"Método alternativo: Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
-                return deleted_count
-            except Exception as backup_error:
-                logger.error(f"Error en método alternativo: {str(backup_error)}")
+                if hasattr(result, 'data') and result.data:
+                    deleted_count = result.data[0]
+                    logger.info(f"Función RPC: Se eliminaron {deleted_count} fragmentos de la tabla 'documents'")
+                    return deleted_count
+                return 0
+            except Exception as e2:
+                logger.error(f"Error con función RPC para eliminar de tabla 'documents': {e2}")
                 return 0
     
     def _update_or_create_file_record(self, metadata: Dict[str, Any]) -> bool:
@@ -300,11 +280,11 @@ class VectorDatabase:
             # Verificar si el archivo ya existe
             existing_file = self.supabase.table("files").select("*").eq("id", file_id).execute()
             
+            # IMPORTANTE: Nunca actualizamos last_modified aquí
             file_data = {
                 "name": metadata.get("name", "Unknown"),
                 "mime_type": metadata.get("mime_type", "application/octet-stream"),
                 "source": metadata.get("source", "google_drive"),
-                "last_modified": metadata.get("modified_time", datetime.now().isoformat()),
                 "processed_at": datetime.now().isoformat(),
                 "status": "processed",
                 "metadata": json.dumps({
@@ -349,27 +329,31 @@ class VectorDatabase:
             # Verificar si el archivo ya existe
             existing_file = self.supabase.table("files").select("*").eq("id", file_id).execute()
             
+            # IMPORTANTE: Nunca actualizamos last_modified aquí
             file_data = {
                 "name": metadata.get("name", "Unknown"),
                 "mime_type": metadata.get("mime_type", "application/octet-stream"),
-                "source": metadata.get("source", "google_drive"),
-                "last_modified": metadata.get("modified_time", datetime.now().isoformat()),
                 "processed_at": datetime.now().isoformat(),
-                "status": "processed",
-                "metadata": json.dumps({
-                    "total_chunks": metadata.get("total_chunks", 1),
-                    "size": metadata.get("size", 0),
-                    "checksum": metadata.get("checksum", "")
-                })
             }
             
             if existing_file.data:
-                # Actualizar el archivo existente
+                # Actualizar el archivo existente (pero no la fecha de modificación)
                 result = self.supabase.table("files").update(file_data).eq("id", file_id).execute()
                 logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) actualizado")
             else:
-                # Crear un nuevo registro de archivo
+                # Si no existe el registro, crear uno nuevo con datos básicos
+                # La fecha de modificación debe ser establecida en document_manager.py
                 file_data["id"] = file_id
+                file_data["source"] = metadata.get("source", "google_drive")
+                file_data["status"] = "processed"
+                file_data["metadata"] = json.dumps({
+                    "total_chunks": metadata.get("total_chunks", 1),
+                    "checksum": metadata.get("checksum", "")
+                })
+                
+                # NOTA: No establecemos last_modified aquí, se debe hacer en document_manager.py
+                # antes de llamar a esta función
+                
                 result = self.supabase.table("files").insert(file_data).execute()
                 logger.info(f"Registro de archivo {file_id} (fragmento {chunk_index}) creado")
             

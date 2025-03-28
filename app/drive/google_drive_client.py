@@ -66,6 +66,8 @@ class GoogleDriveClient:
             
             # Consultar los archivos en la carpeta
             query = f"'{folder_id}' in parents and trashed = false"
+            logger.info(f"Consultando archivos en Google Drive: {query}")
+            
             results = self.service.files().list(
                 q=query,
                 fields="files(id, name, mimeType, modifiedTime, md5Checksum)",
@@ -73,8 +75,19 @@ class GoogleDriveClient:
             ).execute()
             
             files = results.get('files', [])
+            
+            # Registrar información detallada de fechas
+            for file in files[:3]:  # Mostrar detalle solo para los primeros 3 archivos
+                file_id = file.get('id', 'desconocido')
+                file_name = file.get('name', 'desconocido')
+                modified_time = file.get('modifiedTime', '')
+                
+                logger.info(f"[FECHA] Detalle de archivo Google Drive: {file_name} ({file_id})")
+                logger.info(f"[FECHA] modifiedTime de Google Drive (original): {modified_time}")
+            
             logger.info(f"Se encontraron {len(files)} archivos en la carpeta {folder_id}")
             return files
+            
         except Exception as e:
             logger.error(f"Error al listar archivos en la carpeta {folder_id}: {e}")
             return []

@@ -58,8 +58,10 @@ class DocumentManager:
         try:
             file_id = file_data.get('id')
             file_name = file_data.get('name', 'Desconocido')
+            drive_modified_time = file_data.get('modifiedTime', '')
             
             logger.info(f"Procesando archivo nuevo: {file_name} ({file_id})")
+            logger.info(f"Fecha de modificación de Google Drive: {drive_modified_time}")
             
             # Verificar si el archivo ya ha sido procesado
             chunks = self.vector_db.get_chunks_by_file_id(file_id)
@@ -67,24 +69,68 @@ class DocumentManager:
                 logger.info(f"El archivo {file_name} ya ha sido procesado previamente, actualizando")
                 return self.process_modified_file(file_data)
             
+            # Guardar explícitamente la fecha de modificación de Google Drive en la tabla files
+            if file_id:
+                try:
+                    logger.info(f"Creando registro en tabla files con fecha de Google Drive: {drive_modified_time}")
+                    
+                    # Verificar si ya existe un registro
+                    response = self.vector_db.supabase.table("files").select("*").eq("id", file_id).execute()
+                    
+                    # Datos para crear o actualizar
+                    file_record = {
+                        "id": file_id,
+                        "name": file_name,
+                        "mime_type": file_data.get('mimeType', ''),
+                        "source": "google_drive",
+                        "processed_at": datetime.now().isoformat(),
+                        "status": "processing"
+                    }
+                    
+                    # Siempre usar la fecha de Google Drive, nunca la fecha del sistema
+                    if drive_modified_time:
+                        file_record["last_modified"] = drive_modified_time
+                    
+                    if not response.data or len(response.data) == 0:
+                        # Crear un nuevo registro
+                        self.vector_db.supabase.table("files").insert(file_record).execute()
+                        logger.info(f"Registro creado en tabla files")
+                    else:
+                        # Actualizar registro existente
+                        self.vector_db.supabase.table("files").update(file_record).eq("id", file_id).execute()
+                        logger.info(f"Registro actualizado en tabla files")
+                
+                except Exception as e:
+                    logger.error(f"Error al guardar en tabla files: {e}")
+            
             # Descargar el archivo
             local_path = self.drive_client.download_file(file_id)
             if not local_path:
                 logger.error(f"No se pudo descargar el archivo {file_id}")
                 return
             
-            # Preparar metadatos
+            # Preparar metadatos (sin incluir modified_time)
             file_metadata = {
                 "file_id": file_id,
                 "name": file_name,
                 "source": "google_drive",
-                "modified_time": file_data.get('modifiedTime', ''),
                 "mime_type": file_data.get('mimeType', ''),
                 "checksum": file_data.get('md5Checksum', '')
             }
             
             # Procesar el archivo
             self._process_file(local_path, file_metadata)
+            
+            # Actualizar el estado a "processed" sin cambiar la fecha de modificación
+            try:
+                self.vector_db.supabase.table("files").update({
+                    "status": "processed",
+                    "processed_at": datetime.now().isoformat()
+                }).eq("id", file_id).execute()
+                
+                logger.info(f"Estado actualizado a 'processed' en tabla files")
+            except Exception as e:
+                logger.error(f"Error al actualizar estado: {e}")
             
             # Eliminar el archivo local después de procesarlo
             os.remove(local_path)
@@ -96,28 +142,87 @@ class DocumentManager:
         """Procesa un archivo modificado.
         
         Args:
-            file_data: Metadatos del archivo.
+            file_data: Metadatos del archivo modificado.
         """
         try:
             file_id = file_data.get('id')
             file_name = file_data.get('name', 'Desconocido')
-            checksum = file_data.get('md5Checksum', '')
+            drive_modified_time = file_data.get('modifiedTime', '')
             
             logger.info(f"Procesando archivo modificado: {file_name} ({file_id})")
+            logger.info(f"Fecha de modificación de Google Drive: {drive_modified_time}")
             
-            # Verificar si el archivo ha cambiado realmente
-            chunks = self.vector_db.get_chunks_by_file_id(file_id)
-            if chunks and chunks[0].get('metadata', {}).get('checksum') == checksum:
-                logger.info(f"El archivo {file_name} no ha cambiado (mismo checksum), omitiendo procesamiento")
-                return
+            # Verificar si el archivo ha cambiado realmente comparando fechas
+            response = self.vector_db.supabase.table("files").select("last_modified").eq("id", file_id).execute()
+            
+            if response.data and len(response.data) > 0:
+                db_modified_time = response.data[0].get('last_modified', '')
+                logger.info(f"Fecha almacenada en BD: {db_modified_time}")
+                
+                # Normalizar formatos de fecha para comparación correcta
+                drive_time_normalized = self._normalize_date_string(drive_modified_time)
+                db_time_normalized = self._normalize_date_string(db_modified_time)
+                
+                logger.info(f"[FECHA] Comparando: Drive={drive_time_normalized} | BD={db_time_normalized}")
+                
+                # Comparación de fechas normalizadas
+                if drive_time_normalized == db_time_normalized:
+                    logger.info(f"El archivo {file_name} no ha cambiado (misma fecha después de normalizar), omitiendo procesamiento")
+                    return
+            
+            # Actualizar la fecha de Google Drive en la tabla files
+            try:
+                logger.info(f"Actualizando fecha de modificación: {drive_modified_time}")
+                
+                update_data = {
+                    "status": "processing",
+                    "processed_at": datetime.now().isoformat()
+                }
+                
+                # Solo incluir last_modified si tenemos un valor de Google Drive
+                if drive_modified_time:
+                    update_data["last_modified"] = drive_modified_time
+                
+                self.vector_db.supabase.table("files").update(update_data).eq("id", file_id).execute()
+                logger.info(f"Fecha actualizada en tabla files")
+            except Exception as e:
+                logger.error(f"Error al actualizar fecha: {e}")
             
             # Eliminar los fragmentos existentes
             deleted_count = self.vector_db.delete_chunks_by_file_id(file_id)
-            logger.info(f"Se eliminaron {deleted_count} fragmentos existentes del archivo {file_id}")
+            logger.info(f"Se eliminaron {deleted_count} fragmentos existentes de la tabla 'documents' para el archivo {file_id}")
             
-            # Procesar el archivo como si fuera nuevo
-            self.process_new_file(file_data)
+            # Descargar y procesar el archivo
+            local_path = self.drive_client.download_file(file_id)
+            if not local_path:
+                logger.error(f"No se pudo descargar el archivo {file_id}")
+                return
             
+            # Preparar metadatos para el procesamiento (sin incluir modified_time)
+            file_metadata = {
+                "file_id": file_id,
+                "name": file_name,
+                "source": "google_drive",
+                "mime_type": file_data.get('mimeType', ''),
+                "checksum": file_data.get('md5Checksum', '')
+            }
+            
+            # Procesar el archivo
+            self._process_file(local_path, file_metadata)
+            
+            # Actualizar el estado sin modificar la fecha
+            try:
+                self.vector_db.supabase.table("files").update({
+                    "status": "processed",
+                    "processed_at": datetime.now().isoformat()
+                }).eq("id", file_id).execute()
+                
+                logger.info(f"Estado actualizado a 'processed' en tabla files")
+            except Exception as e:
+                logger.error(f"Error al actualizar estado: {e}")
+            
+            # Eliminar el archivo local
+            os.remove(local_path)
             logger.info(f"Archivo modificado {file_name} procesado correctamente")
         except Exception as e:
             logger.error(f"Error al procesar el archivo modificado {file_data.get('id', '')}: {e}")
@@ -127,6 +232,11 @@ class DocumentManager:
         
         Args:
             file_data: Metadatos del archivo.
+            
+        Esta función:
+        1. Verifica que el archivo existe en la tabla 'files'
+        2. Elimina todos los fragmentos asociados al archivo de la tabla 'documents' usando la columna file_id
+        3. Elimina el registro del archivo de la tabla 'files'
         """
         try:
             file_id = file_data.get('id')
@@ -142,7 +252,7 @@ class DocumentManager:
                 
             # Eliminar los fragmentos del archivo
             deleted_count = self.vector_db.delete_chunks_by_file_id(file_id)
-            logger.info(f"Se eliminaron {deleted_count} fragmentos del archivo {file_id}")
+            logger.info(f"Se eliminaron {deleted_count} fragmentos de la tabla 'documents' para el archivo {file_id}")
             
             # Eliminar el registro del archivo en la tabla 'files'
             response = self.vector_db.supabase.table("files").delete().eq("id", file_id).execute()
@@ -184,8 +294,23 @@ class DocumentManager:
         embedding_start_time = time.time()
         logger.info(f"Iniciando generación de embeddings para {chunks_count} fragmentos...")
         
+        # Preparar textos y metadatos para la generación de embeddings
         batch_texts = [chunk.get('content', '') for chunk in chunks]
-        embeddings = self.embedding_generator.generate_embeddings_batch(batch_texts)
+        batch_metadata = [chunk.get('metadata', {}) for chunk in chunks]
+        
+        # Opcionalmente usar el contenido enriquecido si está disponible
+        enriched_texts_metadata = []
+        for chunk in chunks:
+            if 'enriched_content' in chunk:
+                # Crear un metadata especial que incluye el contenido enriquecido
+                metadata = chunk.get('metadata', {}).copy()
+                metadata['enriched_content'] = chunk.get('enriched_content')
+                enriched_texts_metadata.append(metadata)
+            else:
+                enriched_texts_metadata.append(chunk.get('metadata', {}))
+                
+        # Generar embeddings utilizando metadatos enriquecidos
+        embeddings = self.embedding_generator.generate_embeddings_batch(batch_texts, enriched_texts_metadata)
         
         embedding_time = time.time() - embedding_start_time
         logger.info(f"Generación de embeddings completada en {embedding_time:.2f} segundos")
@@ -205,7 +330,7 @@ class DocumentManager:
                 metadata = chunk.get('metadata', {})
                 chunk_id = chunk.get('id', self._generate_chunk_id(file_metadata.get("file_id", ""), i))
                 
-                # Añadir a la base de datos
+                # Añadir a la base de datos (solo guardar el contenido original, no el enriquecido)
                 if self.vector_db.add_document(chunk_id, content, metadata, embedding):
                     success_count += 1
             else:
@@ -216,7 +341,7 @@ class DocumentManager:
         
         logger.info(f"Se añadieron {success_count} de {chunks_count} fragmentos a la base de datos")
         logger.info(f"Guardado en BD completado en {db_time:.2f} segundos")
-        logger.info(f"Procesamiento total completado en {total_time:.2f} segundos (∼{total_time/60:.2f} minutos)")
+        logger.info(f"Procesamiento total completado en {total_time:.2f} segundos (~{total_time/60:.2f} minutos)")
     
     def _generate_chunk_id(self, file_id: str, chunk_index: int) -> str:
         """Genera un ID único para un fragmento de documento.
@@ -272,20 +397,32 @@ class DocumentManager:
             logger.info(f"Procesando {len(current_files)} archivos actuales...")
             for file_data in current_files:
                 file_id = file_data['id']
+                file_name = file_data.get('name', 'Desconocido')
+                drive_modified_time = file_data.get('modifiedTime', '')
+                
+                logger.info(f"Verificando archivo: {file_name} ({file_id})")
+                logger.info(f"[FECHA] Google Drive modifiedTime: {drive_modified_time}")
                 
                 if file_id in processed_files:
-                    # Archivo ya existente, verificar si ha sido modificado
-                    old_checksum = processed_files[file_id].get('metadata', {}).get('checksum', '')
-                    new_checksum = file_data.get('md5Checksum', '')
+                    # Archivo ya existente, verificar si ha sido modificado usando la fecha de modificación
+                    db_modified_time = processed_files[file_id].get('last_modified', '')
+                    logger.info(f"[FECHA] Fecha en BD: {db_modified_time}")
                     
-                    if old_checksum != new_checksum:
-                        logger.info(f"Archivo modificado detectado: {file_data.get('name')} (checksum cambiado)")
-                        self.process_modified_file(file_data)
+                    # Normalizar formatos de fecha para comparación correcta
+                    drive_time_normalized = self._normalize_date_string(drive_modified_time)
+                    db_time_normalized = self._normalize_date_string(db_modified_time)
+                    
+                    logger.info(f"[FECHA] Comparando: Drive={drive_time_normalized} | BD={db_time_normalized}")
+                    
+                    # Comparación de fechas normalizadas
+                    if drive_time_normalized == db_time_normalized:
+                        logger.info(f"Archivo sin cambios: {file_name} (fechas idénticas después de normalizar)")
                     else:
-                        logger.info(f"Archivo sin cambios: {file_data.get('name')} (mismo checksum)")
+                        logger.info(f"Archivo modificado detectado: {file_name} (fechas diferentes después de normalizar)")
+                        self.process_modified_file(file_data)
                 else:
                     # Archivo nuevo
-                    logger.info(f"Archivo nuevo detectado: {file_data.get('name')}")
+                    logger.info(f"Archivo nuevo detectado: {file_name}")
                     self.process_new_file(file_data)
             
             logger.info("Procesamiento de todos los archivos completado correctamente")
@@ -351,4 +488,32 @@ class DocumentManager:
                 "error": str(e),
                 "total_files": 0,
                 "total_chunks": 0
-            } 
+            }
+    
+    def _normalize_date_string(self, date_str: str) -> str:
+        """Normaliza un string de fecha para comparación.
+        
+        Maneja varios formatos:
+        - ISO con Z: 2021-10-04T15:16:30.000Z
+        - ISO con offset: 2021-10-04T15:16:30+00:00
+        
+        Args:
+            date_str: String de fecha a normalizar
+            
+        Returns:
+            String normalizado (2021-10-04T15:16:30)
+        """
+        # Remover cualquier parte después del signo + (para ISO con offset)
+        if '+' in date_str:
+            date_str = date_str.split('+')[0]
+        
+        # Remover cualquier parte después del signo Z (para ISO con Z)
+        if date_str.endswith('Z'):
+            date_str = date_str[:-1]
+        
+        # Remover cualquier fracción de segundo (.000)
+        if '.' in date_str:
+            parts = date_str.split('.')
+            date_str = parts[0]
+        
+        return date_str 

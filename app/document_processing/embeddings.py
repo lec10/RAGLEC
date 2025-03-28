@@ -32,16 +32,23 @@ class EmbeddingGenerator:
         )
         logger.info(f"Generador de embeddings inicializado con el modelo {model_name}")
     
-    def generate_embedding(self, text: str, max_retries: int = 3) -> Optional[List[float]]:
+    def generate_embedding(self, text: str, metadata: dict = None, max_retries: int = 3) -> Optional[List[float]]:
         """Genera un embedding para un texto.
         
         Args:
             text: Texto para generar el embedding.
+            metadata: Metadatos opcionales para enriquecer el texto antes de generar embedding.
             max_retries: Número máximo de reintentos en caso de error.
             
         Returns:
             List[float] o None: Vector de embedding si se generó correctamente, None en caso contrario.
         """
+        # Si hay metadatos disponibles, construir un texto enriquecido para el embedding
+        if metadata and isinstance(metadata, dict):
+            # Usar un formato predefinido si existe un campo enriquecido
+            if 'enriched_content' in metadata:
+                text = metadata['enriched_content']
+        
         retries = 0
         while retries < max_retries:
             try:
@@ -59,11 +66,12 @@ class EmbeddingGenerator:
         logger.error(f"No se pudo generar el embedding después de {max_retries} intentos")
         return None
     
-    def generate_embeddings_batch(self, texts: List[str], batch_size: int = 20) -> List[Optional[List[float]]]:
+    def generate_embeddings_batch(self, texts: List[str], metadata_list: List[dict] = None, batch_size: int = 20) -> List[Optional[List[float]]]:
         """Genera embeddings para una lista de textos usando la API en modo batch real.
         
         Args:
             texts: Lista de textos para generar embeddings.
+            metadata_list: Lista opcional de metadatos para enriquecer los textos.
             batch_size: Tamaño del lote para procesar de una vez.
             
         Returns:
@@ -72,17 +80,30 @@ class EmbeddingGenerator:
         all_embeddings = []
         total_batches = (len(texts) + batch_size - 1) // batch_size
         
+        # Si hay metadatos disponibles, enriquecer los textos
+        enriched_texts = texts.copy()
+        if metadata_list and len(metadata_list) == len(texts):
+            for i, (text, metadata) in enumerate(zip(texts, metadata_list)):
+                if metadata and 'enriched_content' in metadata:
+                    enriched_texts[i] = metadata['enriched_content']
+                elif metadata:
+                    # Crear un texto enriquecido básico con metadatos disponibles
+                    file_name = metadata.get('name', '')
+                    position = metadata.get('position', '')
+                    if file_name or position:
+                        enriched_texts[i] = f"ARCHIVO: {file_name}\nPOSICIÓN: {position}\nCONTENIDO:\n{text}"
+        
         # Configurar el logger de httpx para incluir información adicional
         httpx_logger = logging.getLogger('httpx')
         original_level = httpx_logger.level
         
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i:i+batch_size]
-            batch_end = min(i+batch_size, len(texts))
-            logger.info(f"Procesando lote {(i//batch_size)+1}/{total_batches} (fragmentos {i+1}-{batch_end} de {len(texts)})")
+        for i in range(0, len(enriched_texts), batch_size):
+            batch = enriched_texts[i:i+batch_size]
+            batch_end = min(i+batch_size, len(enriched_texts))
+            logger.info(f"Procesando lote {(i//batch_size)+1}/{total_batches} (fragmentos {i+1}-{batch_end} de {len(enriched_texts)})")
             
             # Logging antes de la llamada a la API
-            logger.info(f"Enviando solicitud de embeddings para fragmentos {i+1}-{batch_end} de {len(texts)}")
+            logger.info(f"Enviando solicitud de embeddings para fragmentos {i+1}-{batch_end} de {len(enriched_texts)}")
             
             retries = 0
             max_retries = 5
@@ -93,12 +114,12 @@ class EmbeddingGenerator:
                     batch_embeddings = self.embeddings.embed_documents(batch)
                     
                     # Logging después de la llamada a la API
-                    logger.info(f"Respuesta recibida para fragmentos {i+1}-{batch_end} de {len(texts)} - HTTP 200 OK")
+                    logger.info(f"Respuesta recibida para fragmentos {i+1}-{batch_end} de {len(enriched_texts)} - HTTP 200 OK")
                     
                     all_embeddings.extend(batch_embeddings)
                     
                     # Breve pausa para evitar límites de tasa
-                    if i + batch_size < len(texts):
+                    if i + batch_size < len(enriched_texts):
                         time.sleep(0.2)
                     
                     break  # Salir del bucle de reintentos si tuvo éxito

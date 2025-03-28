@@ -57,7 +57,7 @@ END;
 $$;
 
 -- Crear función para obtener todos los fragmentos de un archivo específico
-CREATE OR REPLACE FUNCTION get_chunks_by_file_id(file_id TEXT)
+CREATE OR REPLACE FUNCTION get_chunks_by_file_id(file_id_param TEXT)
 RETURNS TABLE (
     id TEXT,
     content TEXT,
@@ -73,7 +73,8 @@ BEGIN
         documents.metadata
     FROM documents
     WHERE
-        documents.metadata->>'file_id' = file_id
+        documents.metadata->>'file_id' = file_id_param
+        OR (documents.file_id = file_id_param AND documents.file_id IS NOT NULL)
     ORDER BY (documents.metadata->>'chunk_index')::INTEGER;
 END;
 $$;
