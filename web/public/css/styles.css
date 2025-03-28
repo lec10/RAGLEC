@@ -465,25 +465,48 @@ body.sidebar-open .app-container {
 }
 
 .sources-content {
+    position: relative;
+    z-index: 1;
     padding: var(--spacing-md);
     background-color: var(--color-background);
-    font-size: var(--font-size-sm);
-    border-top: 1px solid var(--color-border);
-    max-height: 500px; /* Altura máxima para evitar que ocupe toda la pantalla */
-    overflow-y: auto; /* Permitir scroll dentro de las fuentes */
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    margin-top: 5px;
+    max-height: 700px; /* Aumentar altura máxima para documentos grandes */
+    overflow-y: auto;
+    transition: all 0.3s ease;
 }
 
-/* Ocultar la sección de fuentes */
 .sources-content.hidden {
     max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
+    opacity: 0;
     overflow: hidden;
+    border: none;
+    margin: 0;
+}
+
+/* Mejorar la apariencia del scrollbar para la sección de fuentes */
+.sources-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sources-content::-webkit-scrollbar-track {
+    background: var(--color-background);
+    border-radius: 4px;
+}
+
+.sources-content::-webkit-scrollbar-thumb {
+    background: rgba(var(--color-primary-rgb), 0.3);
+    border-radius: 4px;
+}
+
+.sources-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--color-primary-rgb), 0.5);
 }
 
 .source-item {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
 }
@@ -495,18 +518,28 @@ body.sidebar-open .app-container {
 }
 
 .source-title {
-    font-weight: var(--font-weight-medium);
-    margin-bottom: var(--spacing-xs);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
     color: var(--color-primary);
+    background-color: rgba(var(--color-primary-rgb), 0.05);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+    border-bottom: none;
 }
 
 .source-content {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-md);
     background-color: var(--color-surface);
-    border-radius: var(--border-radius);
-    border-left: 3px solid var(--color-primary);
-    margin-top: var(--spacing-xs);
-    color: var(--color-text-secondary);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border: 1px solid var(--color-border);
+    margin-top: 0;
+    color: var(--color-text-primary);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    max-height: none;
 }
 
 .message-actions {
@@ -864,29 +897,6 @@ body.sidebar-open .app-container {
 
 .highlight-sources {
     color: var(--color-primary);
-}
-
-/* Asegurarse que el contenido de las fuentes se muestra correctamente */
-.sources-content {
-    position: relative;
-    z-index: 1;
-    padding: var(--spacing-md);
-    background-color: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    margin-top: 5px;
-    max-height: 500px;
-    overflow-y: auto;
-    transition: all 0.3s ease;
-}
-
-.sources-content.hidden {
-    max-height: 0;
-    padding: 0;
-    opacity: 0;
-    overflow: hidden;
-    border: none;
-    margin: 0;
 }
 
 .sources-heading {

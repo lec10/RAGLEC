@@ -545,19 +545,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         sources.forEach((source, index) => {
             try {
+                // Usar contenido completo sin cortar
                 let content = source.content || '';
-                // Limitar el contenido para no abrumar al usuario
-                if (content.length > 300) {
-                    content = content.substring(0, 300) + '...';
-                }
                 
                 // Escapar HTML para prevenir inyección de código
-                const title = source.title ? escapeHTML(source.title) : 'Documento sin título';
+                const fileName = source.file_name ? escapeHTML(source.file_name) : 'Documento sin nombre';
+                const chunkIndex = source.chunk_index !== undefined ? source.chunk_index + 1 : '?';
+                const totalChunks = source.total_chunks || '?';
                 content = escapeHTML(content);
                 
                 sourcesHTML += `
                     <div class="source-item" id="source-${index}">
-                        <div class="source-title">${title}</div>
+                        <div class="source-title">
+                            Documento ${index + 1}: ${fileName} 
+                            (Fragmento ${chunkIndex} de ${totalChunks})
+                        </div>
                         <div class="source-content">${content}</div>
                     </div>
                 `;
@@ -571,7 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        console.log("HTML de fuentes generado:", sourcesHTML);
+        console.log("HTML de fuentes generado para " + sources.length + " fuentes");
         
         return sourcesHTML;
     }
@@ -665,6 +667,17 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingIndicator.classList.add('hidden');
             
             console.log("Respuesta completa recibida:", response);
+            
+            // Depurar fuentes
+            if (response.sources && response.sources.length > 0) {
+                console.log("DEBUG DE FUENTES:");
+                response.sources.forEach((src, idx) => {
+                    console.log(`Fuente ${idx+1}:`, src);
+                    console.log(` - Nombre archivo:`, src.file_name);
+                    console.log(` - Índice de chunk:`, src.chunk_index);
+                    console.log(` - Total de chunks:`, src.total_chunks);
+                });
+            }
             
             // Comprobar si hay error en la respuesta
             if (response.error) {

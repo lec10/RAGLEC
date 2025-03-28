@@ -230,19 +230,37 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
                 # Verificar que metadata existe y es un diccionario
                 metadata = doc.get('metadata', {})
                 if not isinstance(metadata, dict):
-                    metadata = {}  # Si no es un diccionario, usar uno vacío
+                    try:
+                        # Intentar deserializar si viene como string
+                        if isinstance(metadata, str):
+                            metadata = json.loads(metadata)
+                        else:
+                            metadata = {}  # Si no es un diccionario ni string, usar uno vacío
+                    except Exception as e:
+                        logger.warning(f"Error al deserializar metadata: {e}")
+                        metadata = {}  # Si hay error al deserializar, usar uno vacío
+                    
                     logger.warning(f"Metadata no es un diccionario: {type(metadata)}")
+                
+                # Log detallado del metadata para debugging
+                logger.info(f"Metadata original: {json.dumps(metadata)}")
                 
                 # Asegurar que total_chunks siempre sea un número (1 por defecto si no existe)
                 total_chunks = metadata.get('total_chunks')
                 if total_chunks is None:
                     total_chunks = 1
+                    logger.warning("total_chunks no encontrado en metadata, usando valor por defecto: 1")
                 else:
                     # Intentar convertir a número si es string
                     try:
                         total_chunks = int(total_chunks)
                     except (ValueError, TypeError):
+                        logger.warning(f"Error al convertir total_chunks: {total_chunks}, usando valor por defecto: 1")
                         total_chunks = 1
+                        
+                # Log de información de los campos principales        
+                logger.info(f"Valores extraídos - file_name: '{metadata.get('name', 'Desconocido')}', " +
+                          f"chunk_index: {metadata.get('chunk_index', 0)}, total_chunks: {total_chunks}")
                         
                 documents.append({
                     'content': doc.get('content', 'Contenido no disponible'),
