@@ -644,7 +644,7 @@ body.sidebar-open .app-container {
     font-family: inherit;
     font-size: var(--font-size-md);
     resize: none;
-    overflow-y: auto;
+    overflow-y: hidden;
     background-color: var(--color-background);
     color: var(--color-text-primary);
     transition: border-color var(--transition-speed), box-shadow var(--transition-speed);

@@ -190,7 +190,7 @@ class VectorDatabase:
             # Usar la función RPC para obtener los fragmentos
             result = self.supabase.rpc(
                 "get_chunks_by_file_id",
-                {"file_id": file_id}
+                {"file_id_param": file_id}
             ).execute()
             
             logger.info(f"Fragmentos obtenidos para el archivo {file_id}: {len(result.data)}")
