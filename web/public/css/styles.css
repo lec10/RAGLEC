@@ -809,43 +809,39 @@ body.sidebar-open .app-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    padding: 10px 15px;
-    background-color: rgba(var(--color-primary-rgb), 0.15);
-    border: 1px solid var(--color-primary);
+    width: auto;
+    padding: 6px 10px;
+    background-color: transparent;
+    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
     border-radius: var(--border-radius);
-    color: var(--color-primary);
-    font-weight: bold;
+    color: var(--color-text-secondary);
+    font-weight: normal;
+    font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+    box-shadow: none;
     z-index: 2;
+    margin-right: auto;
 }
 
 .toggle-sources:hover {
-    background-color: rgba(var(--color-primary-rgb), 0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.toggle-sources:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    background-color: rgba(var(--color-primary-rgb), 0.05);
+    color: var(--color-primary);
 }
 
 .toggle-sources i {
-    font-size: 1.2em;
+    font-size: 0.9em;
     transition: transform 0.3s ease;
+    margin-right: 5px;
+}
+
+.toggle-sources .fa-chevron-down {
+    margin-left: 5px;
+    margin-right: 0;
 }
 
 .highlight-sources {
-    animation: pulse-border 2s infinite;
-}
-
-@keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(var(--color-primary-rgb), 0); }
-    100% { box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb), 0); }
+    color: var(--color-primary);
 }
 
 /* Asegurarse que el contenido de las fuentes se muestra correctamente */
@@ -855,10 +851,8 @@ body.sidebar-open .app-container {
     padding: var(--spacing-md);
     background-color: var(--color-background);
     border: 1px solid var(--color-border);
-    border-top: none;
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-    margin-top: -1px;
+    border-radius: var(--border-radius);
+    margin-top: 5px;
     max-height: 500px;
     overflow-y: auto;
     transition: all 0.3s ease;
@@ -870,4 +864,10 @@ body.sidebar-open .app-container {
     opacity: 0;
     overflow: hidden;
     border: none;
+    margin: 0;
+}
+
+.sources-heading {
+    margin-bottom: 0;
+    margin-top: var(--spacing-sm);
 } 

@@ -432,13 +432,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sources && sources.length > 0) {
             sourcesContent.innerHTML = formatSources(sources);
             
-            // Modificar el toggle de fuentes para hacerlo más visible
+            // Modificar el toggle de fuentes
             const toggleButton = sourcesSection.querySelector('.toggle-sources');
-            toggleButton.classList.add('highlight-sources');
-            
-            // Mostrar inicialmente las fuentes para que sean evidentes
-            sourcesContent.classList.remove('hidden');
-            toggleButton.querySelector('.fa-chevron-down').style.transform = 'rotate(180deg)';
+            if (toggleButton) {
+                // Estilo minimalista - no highlight por defecto
+                
+                // Asegurar que el evento click funcione directamente
+                toggleButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log("Clic directo en toggle de fuentes");
+                    
+                    if (sourcesContent.classList.contains('hidden')) {
+                        sourcesContent.classList.remove('hidden');
+                        const icon = toggleButton.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        sourcesContent.classList.add('hidden');
+                        const icon = toggleButton.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+                
+                // Mantener las fuentes ocultas inicialmente
+                sourcesContent.classList.add('hidden');
+                const icon = toggleButton.querySelector('.fa-chevron-down');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
         } else {
             sourcesSection.style.display = 'none';
         }
@@ -634,8 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     // Asegurar visibilidad
                     if (toggleButton) {
-                        // Resaltar el botón para hacerlo más visible
-                        toggleButton.classList.add('highlight-sources');
+                        // Estilo minimalista - no highlight por defecto
                         
                         // Configurar evento click directamente
                         toggleButton.addEventListener('click', function(e) {
@@ -654,10 +672,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         });
                         
-                        // Mostrar las fuentes inicialmente
-                        sourcesContent.classList.remove('hidden');
+                        // Mantener las fuentes ocultas inicialmente
+                        sourcesContent.classList.add('hidden');
                         const icon = toggleButton.querySelector('.fa-chevron-down');
-                        if (icon) icon.style.transform = 'rotate(180deg)';
+                        if (icon) icon.style.transform = 'rotate(0deg)';
                     }
                 } else {
                     const sourcesSection = messageDiv.querySelector('.message-sources');
@@ -696,13 +714,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sources && sources.length > 0) {
             sourcesContent.innerHTML = formatSources(sources);
             
-            // Modificar el toggle de fuentes para hacerlo más visible
+            // Modificar el toggle de fuentes
             const toggleButton = sourcesSection.querySelector('.toggle-sources');
-            toggleButton.classList.add('highlight-sources');
-            
-            // Mostrar inicialmente las fuentes para que sean evidentes
-            sourcesContent.classList.remove('hidden');
-            toggleButton.querySelector('.fa-chevron-down').style.transform = 'rotate(180deg)';
+            if (toggleButton) {
+                // Estilo minimalista - no highlight por defecto
+                
+                // Asegurar que el evento click funcione directamente
+                toggleButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log("Clic directo en toggle de fuentes");
+                    
+                    if (sourcesContent.classList.contains('hidden')) {
+                        sourcesContent.classList.remove('hidden');
+                        const icon = toggleButton.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        sourcesContent.classList.add('hidden');
+                        const icon = toggleButton.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+                
+                // Mantener las fuentes ocultas inicialmente
+                sourcesContent.classList.add('hidden');
+                const icon = toggleButton.querySelector('.fa-chevron-down');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
         } else {
             sourcesSection.style.display = 'none';
         }
