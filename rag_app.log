@@ -19740,3 +19740,189 @@
 2025-03-28 19:06:28,482 - app.core.document_manager - INFO - Archivo sin cambios: AA Main document Proyecto AI.pdf (fechas idénticas después de normalizar)
 2025-03-28 19:06:28,482 - app.core.document_manager - INFO - Procesamiento de todos los archivos completado correctamente
 2025-03-28 19:06:28,482 - __main__ - INFO - Procesamiento de documentos completado
+2025-03-28 19:40:38,942 - __main__ - INFO - === INICIO DE SESIÓN ===
+2025-03-28 19:40:38,943 - __main__ - INFO - Logger configurado para escribir en: C:\Users\Lec\Desktop\code\RAGLEC\rag_app.log
+2025-03-28 19:40:38,945 - __main__ - INFO - Iniciando procesamiento de todos los documentos...
+2025-03-28 19:40:38,977 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-28 19:40:38,979 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-28 19:40:38,979 - app.document_processing.document_loader - INFO - Procesador de documentos inicializado con chunk_size=3000, chunk_overlap=400
+2025-03-28 19:40:39,442 - app.document_processing.embeddings - INFO - Generador de embeddings inicializado con el modelo text-embedding-3-small
+2025-03-28 19:40:39,650 - app.database.supabase_client - INFO - Cliente de Supabase inicializado
+2025-03-28 19:40:39,651 - app.database.vector_store - INFO - Base de datos vectorial inicializada con colección: documents
+2025-03-28 19:40:39,679 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-28 19:40:39,681 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-28 19:40:39,681 - app.drive.folder_monitor - INFO - Monitor de carpetas inicializado para la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-28 19:40:39,681 - app.drive.folder_monitor - INFO - Callback registrado para el evento new_file
+2025-03-28 19:40:39,681 - app.drive.folder_monitor - INFO - Callback registrado para el evento modified_file
+2025-03-28 19:40:39,682 - app.drive.folder_monitor - INFO - Callback registrado para el evento deleted_file
+2025-03-28 19:40:39,682 - app.core.document_manager - INFO - Gestor de documentos inicializado
+2025-03-28 19:40:39,682 - app.drive.google_drive_client - INFO - Consultando archivos en Google Drive: '1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB' in parents and trashed = false
+2025-03-28 19:40:40,681 - app.drive.google_drive_client - INFO - Se encontraron 0 archivos en la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-28 19:40:40,682 - app.core.document_manager - INFO - Se encontraron 0 archivos en Google Drive
+2025-03-28 19:40:41,886 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A "HTTP/2 200 OK"
+2025-03-28 19:40:41,888 - app.core.document_manager - INFO - Se encontraron 2 archivos en la base de datos
+2025-03-28 19:40:41,889 - app.core.document_manager - INFO - Procesando 2 archivos eliminados...
+2025-03-28 19:40:41,889 - app.core.document_manager - INFO - Eliminando archivo: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7)
+2025-03-28 19:40:41,889 - app.core.document_manager - INFO - Procesando archivo eliminado: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7)
+2025-03-28 19:40:42,518 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7 "HTTP/2 200 OK"
+2025-03-28 19:40:42,519 - app.database.vector_store - INFO - Eliminando fragmentos de la tabla 'documents' para archivo: 1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7 usando columna file_id
+2025-03-28 19:40:42,747 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=id&file_id=eq.1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7 "HTTP/2 200 OK"
+2025-03-28 19:40:43,233 - httpx - INFO - HTTP Request: DELETE https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?file_id=eq.1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7 "HTTP/2 200 OK"
+2025-03-28 19:40:43,623 - app.database.vector_store - INFO - Se eliminaron 13 fragmentos de la tabla 'documents' usando columna file_id
+2025-03-28 19:40:43,623 - app.core.document_manager - INFO - Se eliminaron 13 fragmentos de la tabla 'documents' para el archivo 1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7
+2025-03-28 19:40:44,255 - httpx - INFO - HTTP Request: DELETE https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7 "HTTP/2 200 OK"
+2025-03-28 19:40:44,256 - app.core.document_manager - INFO - Se eliminó el registro del archivo Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1zkU4gUzFTXNr8Gk95VMqxaJAWrZMCxl7) de la tabla 'files': 1 registros afectados
+2025-03-28 19:40:44,256 - app.core.document_manager - INFO - Eliminando archivo: AA Main document Proyecto AI.pdf (1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ)
+2025-03-28 19:40:44,256 - app.core.document_manager - INFO - Procesando archivo eliminado: AA Main document Proyecto AI.pdf (1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ)
+2025-03-28 19:40:44,493 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ "HTTP/2 200 OK"
+2025-03-28 19:40:44,493 - app.database.vector_store - INFO - Eliminando fragmentos de la tabla 'documents' para archivo: 1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ usando columna file_id
+2025-03-28 19:40:44,738 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=id&file_id=eq.1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ "HTTP/2 200 OK"
+2025-03-28 19:40:45,218 - httpx - INFO - HTTP Request: DELETE https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?file_id=eq.1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ "HTTP/2 200 OK"
+2025-03-28 19:40:45,593 - app.database.vector_store - INFO - Se eliminaron 11 fragmentos de la tabla 'documents' usando columna file_id
+2025-03-28 19:40:45,593 - app.core.document_manager - INFO - Se eliminaron 11 fragmentos de la tabla 'documents' para el archivo 1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ
+2025-03-28 19:40:46,221 - httpx - INFO - HTTP Request: DELETE https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ "HTTP/2 200 OK"
+2025-03-28 19:40:46,221 - app.core.document_manager - INFO - Se eliminó el registro del archivo AA Main document Proyecto AI.pdf (1zdACaPkFB8KTftaixDQXyuu8uj0YOTbJ) de la tabla 'files': 1 registros afectados
+2025-03-28 19:40:46,221 - app.core.document_manager - INFO - Procesamiento de archivos eliminados completado
+2025-03-28 19:40:46,222 - app.core.document_manager - INFO - Procesando 0 archivos actuales...
+2025-03-28 19:40:46,222 - app.core.document_manager - INFO - Procesamiento de todos los archivos completado correctamente
+2025-03-28 19:40:46,222 - __main__ - INFO - Procesamiento de documentos completado
+2025-03-28 19:42:23,045 - __main__ - INFO - === INICIO DE SESIÓN ===
+2025-03-28 19:42:23,045 - __main__ - INFO - Logger configurado para escribir en: C:\Users\Lec\Desktop\code\RAGLEC\rag_app.log
+2025-03-28 19:42:23,048 - __main__ - INFO - Iniciando procesamiento de todos los documentos...
+2025-03-28 19:42:23,079 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-28 19:42:23,081 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-28 19:42:23,081 - app.document_processing.document_loader - INFO - Procesador de documentos inicializado con chunk_size=3000, chunk_overlap=400
+2025-03-28 19:42:23,541 - app.document_processing.embeddings - INFO - Generador de embeddings inicializado con el modelo text-embedding-3-small
+2025-03-28 19:42:23,754 - app.database.supabase_client - INFO - Cliente de Supabase inicializado
+2025-03-28 19:42:23,755 - app.database.vector_store - INFO - Base de datos vectorial inicializada con colección: documents
+2025-03-28 19:42:23,783 - googleapiclient.discovery_cache - INFO - file_cache is only supported with oauth2client<4.0.0
+2025-03-28 19:42:23,785 - app.drive.google_drive_client - INFO - Cliente de Google Drive inicializado
+2025-03-28 19:42:23,785 - app.drive.folder_monitor - INFO - Monitor de carpetas inicializado para la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-28 19:42:23,785 - app.drive.folder_monitor - INFO - Callback registrado para el evento new_file
+2025-03-28 19:42:23,785 - app.drive.folder_monitor - INFO - Callback registrado para el evento modified_file
+2025-03-28 19:42:23,786 - app.drive.folder_monitor - INFO - Callback registrado para el evento deleted_file
+2025-03-28 19:42:23,786 - app.core.document_manager - INFO - Gestor de documentos inicializado
+2025-03-28 19:42:23,786 - app.drive.google_drive_client - INFO - Consultando archivos en Google Drive: '1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB' in parents and trashed = false
+2025-03-28 19:42:24,786 - app.drive.google_drive_client - INFO - [FECHA] Detalle de archivo Google Drive: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr)
+2025-03-28 19:42:24,786 - app.drive.google_drive_client - INFO - [FECHA] modifiedTime de Google Drive (original): 2025-03-27T22:20:06.037Z
+2025-03-28 19:42:24,787 - app.drive.google_drive_client - INFO - Se encontraron 1 archivos en la carpeta 1jUoLDddIiC8abrtlPRVPOatIjOZM0LWB
+2025-03-28 19:42:24,787 - app.core.document_manager - INFO - Se encontraron 1 archivos en Google Drive
+2025-03-28 19:42:25,857 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A "HTTP/2 200 OK"
+2025-03-28 19:42:25,859 - app.core.document_manager - INFO - Se encontraron 0 archivos en la base de datos
+2025-03-28 19:42:25,859 - app.core.document_manager - INFO - No se encontraron archivos eliminados
+2025-03-28 19:42:25,859 - app.core.document_manager - INFO - Procesando 1 archivos actuales...
+2025-03-28 19:42:25,859 - app.core.document_manager - INFO - Verificando archivo: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr)
+2025-03-28 19:42:25,860 - app.core.document_manager - INFO - [FECHA] Google Drive modifiedTime: 2025-03-27T22:20:06.037Z
+2025-03-28 19:42:25,860 - app.core.document_manager - INFO - Archivo nuevo detectado: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf
+2025-03-28 19:42:25,860 - app.core.document_manager - INFO - Procesando archivo nuevo: Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf (1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr)
+2025-03-28 19:42:25,860 - app.core.document_manager - INFO - Fecha de modificación de Google Drive: 2025-03-27T22:20:06.037Z
+2025-03-28 19:42:26,443 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/rpc/get_chunks_by_file_id "HTTP/2 200 OK"
+2025-03-28 19:42:26,445 - app.database.vector_store - INFO - Fragmentos obtenidos para el archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr: 0
+2025-03-28 19:42:26,445 - app.core.document_manager - INFO - Creando registro en tabla files con fecha de Google Drive: 2025-03-27T22:20:06.037Z
+2025-03-28 19:42:26,675 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:27,256 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files "HTTP/2 201 Created"
+2025-03-28 19:42:27,257 - app.core.document_manager - INFO - Registro creado en tabla files
+2025-03-28 19:42:28,904 - app.drive.google_drive_client - INFO - Archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr descargado correctamente a C:\Users\Lec\AppData\Local\Temp\google_drive_downloads\Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf
+2025-03-28 19:42:28,946 - app.document_processing.document_loader - INFO - PDF cargado con éxito: 12 páginas
+2025-03-28 19:42:28,947 - app.document_processing.document_loader - INFO - Documento C:\Users\Lec\AppData\Local\Temp\google_drive_downloads\Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf cargado correctamente con 12 páginas/secciones
+2025-03-28 19:42:28,947 - app.document_processing.document_loader - INFO - Documento dividido en 13 fragmentos
+2025-03-28 19:42:28,947 - app.document_processing.document_loader - INFO - Procesando 13 fragmentos para el archivo Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf
+2025-03-28 19:42:28,948 - app.document_processing.document_loader - INFO - Progreso: 1/13 fragmentos procesados (7.7%)
+2025-03-28 19:42:28,948 - app.document_processing.document_loader - INFO - Progreso: 13/13 fragmentos procesados (100.0%)
+2025-03-28 19:42:28,948 - app.core.document_manager - INFO - Se extrajeron 13 fragmentos del archivo Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf
+2025-03-28 19:42:28,948 - app.core.document_manager - INFO - Extracción de fragmentos completada en 0.04 segundos
+2025-03-28 19:42:28,948 - app.core.document_manager - INFO - Iniciando generación de embeddings para 13 fragmentos...
+2025-03-28 19:42:28,949 - app.document_processing.embeddings - INFO - Procesando lote 1/1 (fragmentos 1-13 de 13)
+2025-03-28 19:42:28,949 - app.document_processing.embeddings - INFO - Enviando solicitud de embeddings para fragmentos 1-13 de 13
+2025-03-28 19:42:30,762 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+2025-03-28 19:42:31,292 - app.document_processing.embeddings - INFO - Respuesta recibida para fragmentos 1-13 de 13 - HTTP 200 OK
+2025-03-28 19:42:31,292 - app.core.document_manager - INFO - Generación de embeddings completada en 2.34 segundos
+2025-03-28 19:42:31,292 - app.core.document_manager - INFO - Guardando 13 fragmentos en la base de datos...
+2025-03-28 19:42:31,292 - app.core.document_manager - INFO - Guardando en BD: 1/13 fragmentos (7.7%)
+2025-03-28 19:42:31,513 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.34abc47199264cb1d44bf9d63fb59b0f "HTTP/2 200 OK"
+2025-03-28 19:42:31,514 - app.database.vector_store - INFO - Insertando nuevo fragmento 0 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:31,860 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:32,451 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:32,682 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:32,682 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 0) actualizado
+2025-03-28 19:42:32,910 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.62711d77882be1b7b93bd8e51dc5f91f "HTTP/2 200 OK"
+2025-03-28 19:42:32,911 - app.database.vector_store - INFO - Insertando nuevo fragmento 1 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:33,251 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:33,484 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:33,714 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:33,715 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 1) actualizado
+2025-03-28 19:42:33,940 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.d0cd2ef79792b56eafeec1fe9de44d7b "HTTP/2 200 OK"
+2025-03-28 19:42:33,940 - app.database.vector_store - INFO - Insertando nuevo fragmento 2 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:34,282 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:34,533 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:34,777 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:34,777 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 2) actualizado
+2025-03-28 19:42:35,006 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.7f56e9dce45b2c886983b11fe486b962 "HTTP/2 200 OK"
+2025-03-28 19:42:35,007 - app.database.vector_store - INFO - Insertando nuevo fragmento 3 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:35,342 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:35,579 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:35,809 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:35,810 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 3) actualizado
+2025-03-28 19:42:36,033 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.564cb4c3e592274771e49afdf12fd58b "HTTP/2 200 OK"
+2025-03-28 19:42:36,033 - app.database.vector_store - INFO - Insertando nuevo fragmento 4 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:36,365 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:36,593 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:36,817 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:36,817 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 4) actualizado
+2025-03-28 19:42:37,055 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.ae83b4fc6d0726397880418c86bc9931 "HTTP/2 200 OK"
+2025-03-28 19:42:37,056 - app.database.vector_store - INFO - Insertando nuevo fragmento 5 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:37,399 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:37,638 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:37,859 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:37,861 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 5) actualizado
+2025-03-28 19:42:38,087 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.70d720a5ae8892e31c5c877082f49cc7 "HTTP/2 200 OK"
+2025-03-28 19:42:38,088 - app.database.vector_store - INFO - Insertando nuevo fragmento 6 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:38,559 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:38,790 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:39,029 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:39,030 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 6) actualizado
+2025-03-28 19:42:39,253 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.759aa7d5bafd387d7cdbaecaa067f8db "HTTP/2 200 OK"
+2025-03-28 19:42:39,253 - app.database.vector_store - INFO - Insertando nuevo fragmento 7 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:39,580 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:39,824 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:40,050 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:40,050 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 7) actualizado
+2025-03-28 19:42:40,271 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.c0bf294a1154f20e7c992f7280c7953a "HTTP/2 200 OK"
+2025-03-28 19:42:40,272 - app.database.vector_store - INFO - Insertando nuevo fragmento 8 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:40,622 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:40,869 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:41,095 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:41,096 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 8) actualizado
+2025-03-28 19:42:41,322 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.b4cda52011d4e86e695688c1a3f5fe17 "HTTP/2 200 OK"
+2025-03-28 19:42:41,322 - app.database.vector_store - INFO - Insertando nuevo fragmento 9 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:41,665 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:41,895 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:42,125 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:42,125 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 9) actualizado
+2025-03-28 19:42:42,350 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.566daf70cdd1be74b3ad921f52ca90bd "HTTP/2 200 OK"
+2025-03-28 19:42:42,350 - app.database.vector_store - INFO - Insertando nuevo fragmento 10 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:42,688 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:42,914 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:43,144 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:43,145 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 10) actualizado
+2025-03-28 19:42:43,371 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.f25c5828dd4ee833e9c1a863f7a2ab83 "HTTP/2 200 OK"
+2025-03-28 19:42:43,371 - app.database.vector_store - INFO - Insertando nuevo fragmento 11 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:43,725 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:43,946 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:44,179 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:44,181 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 11) actualizado
+2025-03-28 19:42:44,181 - app.core.document_manager - INFO - Guardando en BD: 13/13 fragmentos (100.0%)
+2025-03-28 19:42:44,419 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents?select=%2A&id=eq.50108b1723ad686c5e7f1b53e50b72bd "HTTP/2 200 OK"
+2025-03-28 19:42:44,420 - app.database.vector_store - INFO - Insertando nuevo fragmento 12 de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr
+2025-03-28 19:42:44,759 - httpx - INFO - HTTP Request: POST https://lindtooklbywqxmolrgm.supabase.co/rest/v1/documents "HTTP/2 201 Created"
+2025-03-28 19:42:44,989 - httpx - INFO - HTTP Request: GET https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?select=%2A&id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:45,215 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:45,216 - app.database.vector_store - INFO - Registro de archivo 1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr (fragmento 12) actualizado
+2025-03-28 19:42:45,216 - app.core.document_manager - INFO - Se añadieron 13 de 13 fragmentos a la base de datos
+2025-03-28 19:42:45,216 - app.core.document_manager - INFO - Guardado en BD completado en 13.92 segundos
+2025-03-28 19:42:45,216 - app.core.document_manager - INFO - Procesamiento total completado en 16.31 segundos (~0.27 minutos)
+2025-03-28 19:42:45,451 - httpx - INFO - HTTP Request: PATCH https://lindtooklbywqxmolrgm.supabase.co/rest/v1/files?id=eq.1znjAhNIiz4DG5exV9jciqCYlpkCJN_zr "HTTP/2 200 OK"
+2025-03-28 19:42:45,452 - app.core.document_manager - INFO - Estado actualizado a 'processed' en tabla files
+2025-03-28 19:42:45,452 - app.core.document_manager - INFO - Archivo Resumen Ejecutivo_ Funcionalidades de la IA para los Negocios.pdf procesado correctamente
+2025-03-28 19:42:45,452 - app.core.document_manager - INFO - Procesamiento de todos los archivos completado correctamente
+2025-03-28 19:42:45,452 - __main__ - INFO - Procesamiento de documentos completado
