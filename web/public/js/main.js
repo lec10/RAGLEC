@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Añadir a la interfaz
-        addUserMessageToUI(text);
+        const messageDiv = addUserMessageToUI(text);
         
         // Guardar en historiales
         const messageObj = {
@@ -383,7 +383,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        scrollToBottom();
+        // Hacer scroll asegurando que el mensaje sea visible
+        setTimeout(() => {
+            if (messageDiv) {
+                scrollToElement(messageDiv);
+            } else {
+                scrollToBottom();
+            }
+        }, 50);
+        
+        return messageDiv;
     }
     
     function addUserMessageToUI(text) {
@@ -394,6 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Agregar a la interfaz
         chatMessages.appendChild(messageDiv);
+        
+        return messageDiv;
     }
     
     function addAssistantMessage(text, sources) {
@@ -566,23 +577,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function scrollToBottom() {
-        // Asegurarse de que se ejecuta después de que el DOM se ha actualizado
+        // Obtener el contenedor de mensajes
+        const chatContainer = document.getElementById('chat-messages');
+        if (!chatContainer) return;
+        
+        // Scroll al final con un pequeño retraso para asegurar que el DOM se ha actualizado
         setTimeout(() => {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 10);
+            try {
+                // Primero intentar el método más compatible
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // En algunos navegadores, puede ser útil este método alternativo
+                if (chatContainer.scrollTop < chatContainer.scrollHeight - chatContainer.clientHeight) {
+                    chatContainer.scrollTo({
+                        top: chatContainer.scrollHeight,
+                        behavior: 'auto'
+                    });
+                }
+                
+                console.log("scrollToBottom ejecutado");
+            } catch (error) {
+                console.error("Error en scrollToBottom:", error);
+            }
+        }, 50);
     }
     
-    // Nueva función para hacer scroll directamente a un elemento específico
+    // Función mejorada para hacer scroll a un elemento específico
     function scrollToElement(element) {
-        if (element) {
-            // Usar 'end' en lugar de 'center' para asegurar que se vea todo el elemento
-            element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        if (!element) return;
+        
+        try {
+            // Hacer scroll inmediato para posicionar el elemento
+            element.scrollIntoView({ block: 'end', behavior: 'auto' });
             
-            // Añadir scroll adicional para ver completamente el elemento y cualquier contenido que siga
+            // Obtener el contenedor de mensajes
+            const container = document.getElementById('chat-messages');
+            if (!container) return;
+            
+            // Calcular un espacio adicional para mejorar la visibilidad
+            // Esto asegura que haya espacio para ver los elementos siguientes
+            const additionalScroll = Math.min(150, container.clientHeight * 0.2);
+            
+            // Aplicar scroll adicional para mejorar la visibilidad
             setTimeout(() => {
-                const container = document.getElementById('chat-messages');
-                container.scrollTop += 150; // Scroll adicional para ver más contenido
-            }, 300);
+                container.scrollTop = container.scrollTop + additionalScroll;
+                console.log("Scroll aplicado a elemento:", element);
+            }, 50);
+        } catch (error) {
+            console.error("Error al hacer scroll:", error);
+            // Fallback a scroll básico en caso de error
+            scrollToBottom();
         }
     }
     
@@ -601,8 +645,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Añadir mensaje del usuario
         addUserMessage(query);
         
+        // Hacer scroll explícito para mostrar el mensaje del usuario
+        scrollToBottom();
+        
         // Mostrar indicador de carga
         loadingIndicator.classList.remove('hidden');
+        
+        // Asegurar que el indicador de carga sea visible con scroll adicional
+        setTimeout(() => {
+            loadingIndicator.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 100);
         
         try {
             console.log("Enviando consulta:", query);
