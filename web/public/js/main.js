@@ -2,59 +2,76 @@ document.addEventListener('DOMContentLoaded', () => {
     // Elementos del DOM
     const queryInput = document.getElementById('query-input');
     const sendButton = document.getElementById('send-button');
-    const clearButton = document.getElementById('clear-button');
     const chatMessages = document.getElementById('chat-messages');
     const loadingIndicator = document.getElementById('loading');
+    const newChatButton = document.getElementById('new-chat-button');
     const themeToggle = document.getElementById('theme-toggle');
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const newChatButton = document.getElementById('new-chat');
-    const recentChatsList = document.getElementById('recent-chats');
     const userMessageTemplate = document.getElementById('user-message-template');
     const assistantMessageTemplate = document.getElementById('assistant-message-template');
     const thinkingTemplate = document.getElementById('thinking-template');
-    const chatHistoryItemTemplate = document.getElementById('chat-history-item-template');
     
-    // Estado de la aplicación
-    let darkMode = false;
-    let conversationHistory = []; // Historial de la conversación actual
-    let allChats = []; // Almacena todas las conversaciones
-    let currentChatId = null; // ID de la conversación actual
+    // Variables globales
+    let darkMode = localStorage.getItem('raglec-theme') === 'dark';
+    let currentChatId = localStorage.getItem('raglec-current-chat-id') || generateUUID();
+    let currentMessageId = 0;
+    let chats = JSON.parse(localStorage.getItem('raglec-chats') || '{}');
+    let conversationHistory = [];
     
-    // API Endpoint
-    const apiEndpoint = '/api/query';
-
+    // API Endpoints
+    const API_ENDPOINTS = {
+        query: '/api/query',
+        feedback: '/api/feedback'
+    };
+    
     // Inicialización
-    initApp();
+    // Iniciar tema según preferencia guardada
+    document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    themeToggle.innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    
+    // Registrar event listeners
+    registerEventListeners();
+    
+    // Ajustar la altura del textarea
+    queryInput.addEventListener('input', adjustTextareaHeight);
     
     // Funciones de inicialización
     function initApp() {
-        // Determinar tema preferido
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            toggleDarkMode();
+        try {
+            // Inicializar las variables globales
+            darkMode = localStorage.getItem('raglec-theme') === 'dark';
+            currentChatId = localStorage.getItem('raglec-current-chat-id') || generateUUID();
+            currentMessageId = 0;
+            
+            try {
+                chats = JSON.parse(localStorage.getItem('raglec-chats') || '{}');
+            } catch (e) {
+                console.error('Error al cargar chats:', e);
+                chats = {};
+            }
+            
+            conversationHistory = [];
+            
+            // Aplicar tema
+            document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+            themeToggle.innerHTML = darkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            
+            // Ajustar altura del textarea
+            queryInput.addEventListener('input', adjustTextareaHeight);
+            
+            // Enfocar el input al cargar
+            queryInput.focus();
+            
+            // Registrar event listeners
+            registerEventListeners();
+            
+            console.log('Aplicación inicializada correctamente');
+        } catch (e) {
+            console.error('Error al inicializar la aplicación:', e);
         }
-        
-        // Ajustar altura del textarea
-        queryInput.addEventListener('input', adjustTextareaHeight);
-        
-        // Enfocar el input al cargar
-        queryInput.focus();
-        
-        // Comprobar tema guardado
-        const savedTheme = localStorage.getItem('raglec-theme');
-        if (savedTheme === 'dark' && !darkMode) {
-            toggleDarkMode();
-        }
-        
-        // Cargar todas las conversaciones (solo para el menú lateral, no para mostrar)
-        loadAllChats();
-        
-        // Crear una nueva sesión vacía sin cargar mensajes
-        createEmptySession();
-        
-        // Registrar event listeners
-        registerEventListeners();
     }
+    
+    // Inicializar la aplicación
+    initApp();
     
     function registerEventListeners() {
         // Enviar consulta
@@ -71,18 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Alternar tema oscuro/claro
         themeToggle.addEventListener('click', toggleDarkMode);
         
-        // Alternar menú lateral
-        menuToggle.addEventListener('click', toggleSidebar);
-        sidebarOverlay.addEventListener('click', toggleSidebar);
-        
         // Nueva conversación
-        newChatButton.addEventListener('click', () => {
-            createNewChat();
-            toggleSidebar();
-        });
-        
-        // Limpiar historial
-        clearButton.addEventListener('click', clearConversation);
+        newChatButton.addEventListener('click', createNewChat);
         
         // Delegación de eventos para mostrar/ocultar fuentes y thinking
         document.addEventListener('click', (e) => {
@@ -131,19 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Implementar más acciones según sea necesario
                 }
             }
-            
-            // Botones de elemento del historial
-            if (e.target.closest('.chat-item-button')) {
-                const button = e.target.closest('.chat-item-button');
-                const chatItem = button.closest('.chat-item');
-                const chatId = chatItem.dataset.chatId;
-                
-                // Si no es la conversación actual, cargarla
-                if (chatId !== currentChatId) {
-                    loadChat(chatId);
-                    toggleSidebar();
-                }
-            }
         });
     }
     
@@ -170,10 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Limpiar la conversación actual
             if (currentChatId) {
-                const currentChat = allChats.find(chat => chat.id === currentChatId);
+                const currentChat = chats[currentChatId];
                 if (currentChat) {
                     currentChat.messages = [];
-                    saveAllChats();
+                    saveChats();
                     updateChatTitle(currentChatId, 'Nueva conversación');
                 }
             }
@@ -189,43 +183,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Funciones para manejar las conversaciones
-    function generateUniqueId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, 
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
     
     function createNewChat() {
-        // Generar un nuevo ID único para este chat
-        const chatId = generateUniqueId();
+        currentChatId = generateUUID();
+        
+        // Limpiar los mensajes actuales
+        chatMessages.innerHTML = '';
+        
+        // Mostrar el mensaje de bienvenida
+        document.querySelector('.welcome-message').classList.remove('hidden');
+        
+        // Limpiar el input
+        queryInput.value = '';
+        
+        // Resetear currentMessageId
+        currentMessageId = 0;
+        
+        // Guardar chat en localStorage
+        localStorage.setItem('raglec-current-chat-id', currentChatId);
         
         // Crear un nuevo chat vacío
         const newChat = {
-            id: chatId,
+            id: currentChatId,
             title: 'Nueva conversación',
             messages: [],
-            createdAt: new Date().toISOString()
+            created_at: new Date().toISOString()
         };
         
-        // Añadir al principio de la lista
-        allChats.unshift(newChat);
-        
-        // Limitar a 10 chats recientes
-        if (allChats.length > 10) {
-            allChats = allChats.slice(0, 10);
-        }
-        
-        // Actualizar el almacenamiento
-        saveAllChats();
-        
-        // Cargar este nuevo chat
-        loadChat(chatId);
-        
-        // Actualizar la interfaz
-        updateChatsList();
+        // Guardar en chats
+        chats[currentChatId] = newChat;
+        saveChats();
     }
     
     function loadChat(chatId) {
         // Buscar el chat con ese ID
-        const chat = allChats.find(chat => chat.id === chatId);
+        const chat = chats[chatId];
         if (!chat) return;
         
         // Actualizar chat actual
@@ -246,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (item.role === 'user') {
                 addUserMessageToUI(item.content);
             } else if (item.role === 'assistant') {
-                addAssistantMessageToUI(item.content, item.sources);
+                addAssistantMessageToUI(item.content, item.sources, item.queryId);
             }
         });
         
@@ -259,10 +258,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateChatTitle(chatId, newTitle) {
         // Encontrar el chat y actualizar su título
-        const chatToUpdate = allChats.find(chat => chat.id === chatId);
+        const chatToUpdate = chats[chatId];
         if (chatToUpdate) {
             chatToUpdate.title = newTitle;
-            saveAllChats();
+            saveChats();
             updateChatsList();
         }
     }
@@ -282,11 +281,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateChatsList() {
+        // Verificar si el elemento existe
+        const recentChats = document.getElementById('recent-chats');
+        if (!recentChats) {
+            console.error("Elemento #recent-chats no encontrado");
+            return;
+        }
+        
+        // Verificar si la plantilla existe
+        const chatHistoryItemTemplate = document.getElementById('chat-history-item-template');
+        if (!chatHistoryItemTemplate) {
+            console.error("Plantilla #chat-history-item-template no encontrada");
+            return;
+        }
+        
         // Limpiar la lista
-        recentChatsList.innerHTML = '';
+        recentChats.innerHTML = '';
         
         // Añadir cada chat a la lista
-        allChats.forEach(chat => {
+        Object.values(chats).forEach(chat => {
             const chatItem = chatHistoryItemTemplate.content.cloneNode(true);
             const li = chatItem.querySelector('.chat-item');
             const titleSpan = chatItem.querySelector('.chat-title');
@@ -298,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.classList.add('active');
             }
             
-            recentChatsList.appendChild(li);
+            recentChats.appendChild(li);
         });
     }
     
@@ -307,30 +320,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedChats = localStorage.getItem('raglec-all-chats');
         if (savedChats) {
             try {
-                allChats = JSON.parse(savedChats);
+                chats = JSON.parse(savedChats);
                 updateChatsList();
                 
                 // NO cargar automáticamente la última conversación
                 // Se comentan las siguientes líneas para evitar cargar conversaciones al inicio
                 /*
                 const lastActiveChat = localStorage.getItem('raglec-current-chat');
-                if (lastActiveChat && allChats.some(chat => chat.id === lastActiveChat)) {
+                if (lastActiveChat && Object.keys(chats).some(chatId => chatId === lastActiveChat)) {
                     loadChat(lastActiveChat);
-                } else if (allChats.length > 0) {
+                } else if (Object.keys(chats).length > 0) {
                     // Cargar el chat más reciente
-                    loadChat(allChats[0].id);
+                    loadChat(Object.keys(chats)[0]);
                 }
                 */
             } catch (e) {
                 console.error('Error al cargar chats:', e);
-                allChats = [];
+                chats = {};
                 localStorage.removeItem('raglec-all-chats');
             }
         }
     }
     
     function saveAllChats() {
-        localStorage.setItem('raglec-all-chats', JSON.stringify(allChats));
+        localStorage.setItem('raglec-all-chats', JSON.stringify(chats));
         localStorage.setItem('raglec-current-chat', currentChatId);
     }
     
@@ -354,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
         conversationHistory.push(messageObj);
         
         // Si es el primer mensaje, actualizar el título de la conversación
-        const currentChat = allChats.find(chat => chat.id === currentChatId);
+        const currentChat = chats[currentChatId];
         if (currentChat && (currentChat.messages.length === 0 || (currentChat.title === 'Nueva conversación' && text.length > 0))) {
             // Limitar el título a 30 caracteres
             const newTitle = text.length > 30 ? text.substring(0, 27) + '...' : text;
@@ -363,10 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Actualizar el chat actual
         if (currentChatId) {
-            const chat = allChats.find(chat => chat.id === currentChatId);
+            const chat = chats[currentChatId];
             if (chat) {
                 chat.messages = [...conversationHistory];
-                saveAllChats();
+                saveChats();
             }
         }
         
@@ -398,15 +411,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Actualizar el chat actual
         if (currentChatId) {
-            const chat = allChats.find(chat => chat.id === currentChatId);
+            const chat = chats[currentChatId];
             if (chat) {
                 chat.messages = [...conversationHistory];
-                saveAllChats();
+                saveChats();
             }
         }
     }
     
-    function addAssistantMessageToUI(text, sources) {
+    function addAssistantMessageToUI(text, sources, queryId) {
         // Crear elemento de mensaje del asistente
         const assistantMessageNode = assistantMessageTemplate.content.cloneNode(true);
         const messageDiv = assistantMessageNode.querySelector('.message');
@@ -430,6 +443,46 @@ document.addEventListener('DOMContentLoaded', () => {
             sourcesSection.style.display = 'none';
         }
         
+        // Configurar botones de feedback si hay un queryId
+        if (queryId) {
+            const thumbsUpButton = messageDiv.querySelector('.action-button[title="Me gusta"]');
+            const thumbsDownButton = messageDiv.querySelector('.action-button[title="No me gusta"]');
+            
+            // Almacenar el ID de la consulta en el mensaje
+            messageDiv.dataset.queryId = queryId;
+            
+            // Agregar listeners para los botones de feedback
+            thumbsUpButton.addEventListener('click', function() {
+                sendFeedback(queryId, 1);
+                // Efecto visual para indicar la selección
+                thumbsUpButton.classList.add('selected');
+                thumbsDownButton.classList.remove('selected');
+                
+                // Cambiar la clase del icono de outline a solid
+                thumbsUpButton.querySelector('i').classList.remove('far');
+                thumbsUpButton.querySelector('i').classList.add('fas');
+                
+                // Asegurarse de que el otro botón tenga el icono outline
+                thumbsDownButton.querySelector('i').classList.remove('fas');
+                thumbsDownButton.querySelector('i').classList.add('far');
+            });
+            
+            thumbsDownButton.addEventListener('click', function() {
+                sendFeedback(queryId, -1);
+                // Efecto visual para indicar la selección
+                thumbsDownButton.classList.add('selected');
+                thumbsUpButton.classList.remove('selected');
+                
+                // Cambiar la clase del icono de outline a solid
+                thumbsDownButton.querySelector('i').classList.remove('far');
+                thumbsDownButton.querySelector('i').classList.add('fas');
+                
+                // Asegurarse de que el otro botón tenga el icono outline
+                thumbsUpButton.querySelector('i').classList.remove('fas');
+                thumbsUpButton.querySelector('i').classList.add('far');
+            });
+        }
+        
         // Agregar a la interfaz
         chatMessages.appendChild(messageDiv);
         
@@ -443,24 +496,54 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!sources || sources.length === 0) {
             return '<div class="no-sources">No se encontraron fuentes relevantes.</div>';
         }
-
-        return sources.map((source, index) => {
-            const fileName = source.file_name || 'Documento sin nombre';
-            const chunkIndex = source.chunk_index !== undefined ? source.chunk_index + 1 : '?';
-            const totalChunks = source.total_chunks || '?';
-            const similarity = source.similarity ? (source.similarity * 100).toFixed(1) + '%' : '';
-
-            return `
-                <div class="source-item">
-                    <div class="source-title">
-                        Documento ${index + 1}: ${fileName} 
-                        (Fragmento ${chunkIndex} de ${totalChunks}) 
-                        ${similarity ? `- Similitud: ${similarity}` : ''}
+        
+        console.log("Formateando fuentes:", sources);
+        
+        // Función para escapar HTML
+        function escapeHTML(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Formato HTML para mostrar las fuentes
+        let sourcesHTML = '';
+        
+        sources.forEach((source, index) => {
+            try {
+                let content = source.content || '';
+                // Limitar el contenido para no abrumar al usuario
+                if (content.length > 300) {
+                    content = content.substring(0, 300) + '...';
+                }
+                
+                // Escapar HTML para prevenir inyección de código
+                const title = source.title ? escapeHTML(source.title) : 'Documento sin título';
+                content = escapeHTML(content);
+                
+                sourcesHTML += `
+                    <div class="source-item" id="source-${index}">
+                        <div class="source-title">${title}</div>
+                        <div class="source-content">${content}</div>
                     </div>
-                    <div class="source-content">${source.content || 'No hay contenido disponible'}</div>
-                </div>
-            `;
-        }).join('');
+                `;
+            } catch (error) {
+                console.error("Error al formatear fuente:", error, source);
+                sourcesHTML += `
+                    <div class="source-item error">
+                        <div class="source-title">Error al mostrar esta fuente</div>
+                    </div>
+                `;
+            }
+        });
+        
+        console.log("HTML de fuentes generado:", sourcesHTML);
+        
+        return sourcesHTML;
     }
     
     function scrollToBottom() {
@@ -489,66 +572,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = queryInput.value.trim();
         
         if (!query) {
-            queryInput.focus();
             return;
         }
         
-        // Limpiar input y resetear altura
-        addUserMessage(query);
+        // Limpiar el input y ajustar su altura
         queryInput.value = '';
-        queryInput.style.height = 'auto';
+        adjustTextareaHeight();
         
-        // Mostrar indicador de carga y asegurar que está visible
-        chatMessages.appendChild(loadingIndicator);
+        // Añadir mensaje del usuario
+        addUserMessage(query);
+        
+        // Mostrar indicador de carga
         loadingIndicator.classList.remove('hidden');
         
-        // Hacer scroll directamente al indicador de carga para asegurarse que sea visible
-        scrollToElement(loadingIndicator);
-        
-        // También forzar el scroll al final por si acaso
-        scrollToBottom();
-        
-        // Desactivar el botón de enviar mientras se procesa
-        sendButton.disabled = true;
-        
         try {
+            console.log("Enviando consulta:", query);
+            // Enviar consulta a la API
             const response = await sendQuery(query);
-            loadingIndicator.classList.add('hidden');
-            // Mover el indicador de carga fuera del flujo de mensajes
-            document.querySelector('.chat-container').appendChild(loadingIndicator);
-            sendButton.disabled = false;
             
-            // Mostrar respuesta
+            // Ocultar indicador de carga
+            loadingIndicator.classList.add('hidden');
+            
+            console.log("Respuesta completa recibida:", response);
+            
+            // Comprobar si hay error en la respuesta
             if (response.error) {
-                const errorMessage = addAssistantMessageAndReturn(`Error: ${response.error}`, []);
-                // Hacer scroll al mensaje de error
-                scrollToElement(errorMessage);
-            } else {
-                // Crear el mensaje del asistente vacío primero
+                console.error("Error recibido del API:", response.error);
+                addSystemAlert(`Error: ${response.error}`);
+                return;
+            }
+            
+            // Comprobar si hay respuesta (lo que en el backend se llama "response")
+            if (response.response) {
+                // Crear elemento de mensaje del asistente
                 const assistantMessageNode = assistantMessageTemplate.content.cloneNode(true);
                 const messageDiv = assistantMessageNode.querySelector('.message');
-                const messageContent = messageDiv.querySelector('.message-content');
-                messageContent.textContent = "";
                 
-                // Formatear y mostrar fuentes si existen
-                const sourcesContent = messageDiv.querySelector('.sources-content');
-                if (response.sources && response.sources.length > 0) {
-                    sourcesContent.innerHTML = formatSources(response.sources);
-                } else {
-                    const sourcesSection = messageDiv.querySelector('.message-sources');
-                    sourcesSection.style.display = 'none';
-                }
-                
-                // Agregar a la interfaz
+                // Agregar a la interfaz ahora para poder hacer scroll y efectos de typing
                 chatMessages.appendChild(messageDiv);
                 
-                // Hacer scroll para mostrar el mensaje vacío
-                scrollToElement(messageDiv);
+                // Efecto de typing para la respuesta
+                await typewriterEffect(messageDiv.querySelector('.message-content'), response.response);
                 
-                // Mostrar el texto progresivamente
-                await typewriterEffect(messageContent, response.response);
-                
-                // Guardar en historial una vez que está completo
+                // Guardar en el historial
                 const messageObj = {
                     role: 'assistant',
                     content: response.response,
@@ -557,30 +623,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 conversationHistory.push(messageObj);
                 
+                // Formatear y mostrar fuentes si existen
+                const sourcesContent = messageDiv.querySelector('.sources-content');
+                if (response.sources && response.sources.length > 0) {
+                    console.log("Mostrando fuentes:", response.sources);
+                    sourcesContent.innerHTML = formatSources(response.sources);
+                    // Encontrar section y toggle
+                    const sourcesSection = messageDiv.querySelector('.message-sources');
+                    const toggleButton = sourcesSection.querySelector('.toggle-sources');
+                    
+                    // Asegurar visibilidad
+                    if (toggleButton) {
+                        // Resaltar el botón para hacerlo más visible
+                        toggleButton.classList.add('highlight-sources');
+                        
+                        // Configurar evento click directamente
+                        toggleButton.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("Clic directo en toggle de fuentes (respuesta API)");
+                            
+                            if (sourcesContent.classList.contains('hidden')) {
+                                sourcesContent.classList.remove('hidden');
+                                const icon = toggleButton.querySelector('.fa-chevron-down');
+                                if (icon) icon.style.transform = 'rotate(180deg)';
+                            } else {
+                                sourcesContent.classList.add('hidden');
+                                const icon = toggleButton.querySelector('.fa-chevron-down');
+                                if (icon) icon.style.transform = 'rotate(0deg)';
+                            }
+                        });
+                        
+                        // Mostrar las fuentes inicialmente
+                        sourcesContent.classList.remove('hidden');
+                        const icon = toggleButton.querySelector('.fa-chevron-down');
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    }
+                } else {
+                    const sourcesSection = messageDiv.querySelector('.message-sources');
+                    if (sourcesSection) sourcesSection.style.display = 'none';
+                }
+                
                 // Actualizar el chat actual
                 if (currentChatId) {
-                    const chat = allChats.find(chat => chat.id === currentChatId);
+                    const chat = chats[currentChatId];
                     if (chat) {
                         chat.messages = [...conversationHistory];
-                        saveAllChats();
+                        saveChats();
                     }
                 }
+            } else {
+                console.error('No se recibió respuesta válida:', response);
+                addSystemAlert('No se pudo obtener una respuesta. Por favor, intenta nuevamente.');
             }
         } catch (error) {
+            console.error('Error al enviar consulta:', error);
             loadingIndicator.classList.add('hidden');
-            // Mover el indicador de carga fuera del flujo de mensajes
-            document.querySelector('.chat-container').appendChild(loadingIndicator);
-            sendButton.disabled = false;
-            
-            const errorMessage = addAssistantMessageAndReturn(`Error: No se pudo procesar tu consulta. Por favor, intenta nuevamente.`, []);
-            // Hacer scroll al mensaje de error
-            scrollToElement(errorMessage);
-            
-            console.error('Error:', error);
+            addSystemAlert(`Error al procesar la consulta: ${error.message}`);
         }
-        
-        // Enfocar el input nuevamente
-        queryInput.focus();
     }
     
     // Nueva función que añade un mensaje del asistente y devuelve el elemento DOM creado
@@ -621,10 +721,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Actualizar el chat actual
         if (currentChatId) {
-            const chat = allChats.find(chat => chat.id === currentChatId);
+            const chat = chats[currentChatId];
             if (chat) {
                 chat.messages = [...conversationHistory];
-                saveAllChats();
+                saveChats();
             }
         }
         
@@ -684,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function sendQuery(query) {
-        const response = await fetch(apiEndpoint, {
+        const response = await fetch(API_ENDPOINTS.query, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -699,19 +799,94 @@ document.addEventListener('DOMContentLoaded', () => {
         return await response.json();
     }
 
-    // Nueva función para crear una sesión vacía al inicio
-    function createEmptySession() {
-        // Generar un ID para la sesión actual, pero no cargar contenido
-        currentChatId = generateUniqueId();
-        
-        // Asegurarse de que el área de mensajes esté vacía
-        chatMessages.innerHTML = '';
-        conversationHistory = [];
-        
-        // Mostrar mensaje de bienvenida (asegurarse de que sea visible)
-        const welcomeMessage = document.querySelector('.welcome-message');
-        if (welcomeMessage) {
-            welcomeMessage.style.display = 'block';
+    // Función para manejar el feedback del usuario (thumbs up/down)
+    async function sendFeedback(queryId, feedbackValue) {
+        if (!queryId) {
+            console.error("No se puede enviar feedback: queryId no disponible");
+            return;
         }
+        
+        try {
+            const response = await fetch(API_ENDPOINTS.feedback, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query_id: queryId,
+                    feedback: feedbackValue // 1 para positivo, -1 para negativo
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log("Feedback enviado correctamente");
+                // Mostrar confirmación visual al usuario
+                const feedbackMessage = feedbackValue === 1 ? 
+                    "¡Gracias por tu feedback positivo!" : 
+                    "Gracias por tu feedback. Trabajaremos para mejorar.";
+                    
+                // Mostrar un toast o notificación pequeña
+                showToast(feedbackMessage, feedbackValue === 1 ? "success" : "warning");
+            } else {
+                console.error("Error al enviar feedback:", data.error);
+                showToast("No se pudo registrar tu feedback", "error");
+            }
+        } catch (error) {
+            console.error("Error al enviar feedback:", error);
+            showToast("Error al enviar feedback", "error");
+        }
+    }
+
+    // Función para mostrar un toast/notificación
+    function showToast(message, type = "info") {
+        // Verificar si ya existe un toast y eliminarlo
+        const existingToast = document.querySelector('.feedback-toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        // Crear el elemento toast
+        const toast = document.createElement('div');
+        toast.className = `feedback-toast ${type}`;
+        toast.textContent = message;
+        
+        // Añadir al DOM
+        document.body.appendChild(toast);
+        
+        // Mostrar con animación
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Ocultar después de 3 segundos
+        setTimeout(() => {
+            toast.classList.remove('show');
+            // Eliminar del DOM después de la animación
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    // Guardar chats en localStorage
+    function saveChats() {
+        localStorage.setItem('raglec-chats', JSON.stringify(chats));
+    }
+
+    // Función para mostrar una alerta del sistema
+    function addSystemAlert(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'system-alert';
+        alertDiv.textContent = message;
+        chatMessages.appendChild(alertDiv);
+        scrollToBottom();
+        
+        // Auto-remover después de un tiempo
+        setTimeout(() => {
+            alertDiv.classList.add('fade-out');
+            setTimeout(() => alertDiv.remove(), 500);
+        }, 5000);
     }
 }); 

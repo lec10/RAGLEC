@@ -1,0 +1,23 @@
+/* Estilos para botones de feedback */
+.action-button.selected {
+    color: #4285f4;
+    transform: scale(1.2);
+}
+
+.action-button[title="No me gusta"].selected {
+    color: #ea4335;
+}
+
+/* Cuando se selecciona un botón, cambiar el icono a sólido */
+.action-button[title="Me gusta"].selected .far.fa-thumbs-up {
+    font-weight: 900; /* Hace que el icono sea sólido */
+}
+
+.action-button[title="No me gusta"].selected .far.fa-thumbs-down {
+    font-weight: 900; /* Hace que el icono sea sólido */
+}
+
+/* Transición suave para los botones de feedback */
+.action-button {
+    transition: color 0.3s, transform 0.3s;
+} 

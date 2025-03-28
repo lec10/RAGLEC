@@ -6,6 +6,7 @@ import time
 from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
+from datetime import datetime
 
 # Configurar logging para reducir mensajes innecesarios
 import logging
@@ -13,27 +14,57 @@ logging.getLogger("httpx").setLevel(logging.WARNING)  # Solo mostrar advertencia
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Archivo para logs detallados (solo en desarrollo)
+LOG_DEBUG = os.getenv("LOG_DEBUG", "false").lower() == "true"
+LOG_FILE = os.path.join(os.path.dirname(__file__), 'api_log.txt')
+
+def log_to_file(message):
+    """Función para registrar mensajes en un archivo de log si está habilitado el modo debug"""
+    if not LOG_DEBUG:
+        return
+    try:
+        with open(LOG_FILE, 'a', encoding='utf-8') as f:
+            f.write(f"{datetime.now().isoformat()}: {message}\n")
+    except Exception as e:
+        logger.error(f"Error al escribir en log: {e}")
+
 # Cargar variables de entorno una sola vez para todas las solicitudes
 load_dotenv()
 
 # Cliente global de OpenAI - para evitar inicializarlo en cada solicitud
 openai_api_key = os.getenv("OPENAI_API_KEY")
 if openai_api_key:
-    OPENAI_CLIENT = OpenAI(api_key=openai_api_key)
+    try:
+        OPENAI_CLIENT = OpenAI(api_key=openai_api_key)
+        logger.info("Cliente OpenAI inicializado correctamente")
+        log_to_file("Cliente OpenAI inicializado")
+    except Exception as e:
+        logger.error(f"Error al inicializar cliente OpenAI: {e}")
+        OPENAI_CLIENT = None
 else:
+    logger.error("API key de OpenAI no encontrada en variables de entorno")
     OPENAI_CLIENT = None
 
 # Configuración de Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+if not SUPABASE_URL or not SUPABASE_KEY:
+    logger.error("Credenciales de Supabase no encontradas en variables de entorno")
+    log_to_file("Faltan credenciales de Supabase")
+
 # Configuración global
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 DEFAULT_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
-MAX_RESPONSE_TIME = 15.0  # Tiempo máximo de respuesta
+MAX_RESPONSE_TIME = float(os.getenv("MAX_RESPONSE_TIME", "15.0"))  # Tiempo máximo de respuesta
+logger.info(f"Modelo OpenAI: {DEFAULT_MODEL}, Modelo de embedding: {DEFAULT_EMBEDDING_MODEL}")
+
+# Cache para evitar generar embeddings repetidos
+EMBEDDING_CACHE = {}
 
 # Función para formatear las fuentes de manera segura
 def formatSources(sources):
+    """Formatea las fuentes para asegurar que tengan un formato consistente"""
     formatted_sources = []
     
     for index, source in enumerate(sources):
@@ -52,134 +83,57 @@ def formatSources(sources):
     
     return formatted_sources
 
-class Handler(BaseHTTPRequestHandler):
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+def register_query_in_database(query, response, sources):
+    """Registra una consulta en la base de datos.
+    
+    Args:
+        query: Texto de la consulta.
+        response: Respuesta generada.
+        sources: Fuentes utilizadas.
+    
+    Returns:
+        int or None: ID de la consulta registrada, o None si hubo un error.
+    """
+    try:
+        # Serializar sources como una cadena JSON para almacenarla en la BD
+        sources_json = json.dumps(sources)
         
-    def do_POST(self):
-        # Configurar CORS y respuesta
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
+        # Datos para guardar en la tabla queries
+        query_data = {
+            "query": query,
+            "response": response,
+            "sources": sources_json,
+            "created_at": datetime.now().isoformat()
+        }
         
-        start_time = time.time()
-        logger.info(f"=== INICIO DE SOLICITUD === {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        # Insertar en la tabla
+        supabase_conn = create_client(SUPABASE_URL, SUPABASE_KEY)
+        insert_result = supabase_conn.table("queries").insert(query_data).execute()
+        logger.info("Consulta registrada correctamente en la tabla 'queries'")
         
-        try:
-            # Obtener el cuerpo de la solicitud
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data)
-            logger.info(f"Datos recibidos - tamaño: {len(post_data)} bytes: {time.time() - start_time:.3f}s")
-            
-            # Obtener la consulta
-            query = data.get('query', '')
-            logger.info(f"Consulta recibida: '{query[:50]}...' (tiempo: {time.time() - start_time:.3f}s)")
-            
-            if not query:
-                response = {'error': 'La consulta está vacía'}
-                self.wfile.write(json.dumps(response).encode())
-                logger.info(f"Consulta vacía - terminando: {time.time() - start_time:.3f}s")
-                return
-            
-            # Verificar que todos los clientes estén disponibles
-            if not OPENAI_CLIENT:
-                response = {'error': 'API key de OpenAI no configurada'}
-                self.wfile.write(json.dumps(response).encode())
-                logger.error("API key de OpenAI no configurada")
-                return
-                
-            if not SUPABASE_URL or not SUPABASE_KEY:
-                response = {'error': 'Credenciales de Supabase no configuradas'}
-                self.wfile.write(json.dumps(response).encode())
-                logger.error("Credenciales de Supabase no configuradas")
-                return
-            
-            # Procesar la consulta con el sistema RAG optimizado
-            try:
-                logger.info(f"Iniciando process_query: {time.time() - start_time:.3f}s")
-                
-                # Control de tiempo máximo para evitar timeout
-                remaining_time = MAX_RESPONSE_TIME - (time.time() - start_time)
-                logger.info(f"Tiempo restante para respuesta: {remaining_time:.3f}s")
-                
-                if remaining_time < 5.0:
-                    # Si queda muy poco tiempo, enviamos una respuesta de error
-                    response = {'error': 'Tiempo insuficiente para procesar la consulta'}
-                    self.wfile.write(json.dumps(response).encode())
-                    logger.warning(f"Tiempo insuficiente para procesar: {remaining_time:.3f}s")
-                    return
-                
-                # Procesar la consulta con el tiempo restante como límite
-                rag_result = process_query(query, timeout=remaining_time)
-                
-                process_time = time.time() - start_time
-                logger.info(f"process_query completado en {process_time:.3f}s")
-                
-                # Verificar el tipo de rag_result
-                if not isinstance(rag_result, dict):
-                    logger.error(f"Tipo inesperado de rag_result: {type(rag_result)}")
-                    response = {'error': f"Error interno: resultado inesperado"}
-                    self.wfile.write(json.dumps(response).encode())
-                    return
-                
-                if "error" in rag_result:
-                    logger.error(f"Error devuelto por process_query: {rag_result['error']}")
-                    response = {'error': f"No se pudo procesar tu consulta: {rag_result['error']}"}
-                    self.wfile.write(json.dumps(response).encode())
-                    return
-                
-                # Verificar que rag_result contiene respuesta y fuentes
-                if "response" not in rag_result:
-                    logger.error("rag_result no contiene campo 'response'")
-                    response = {'error': "Error interno: formato de respuesta incorrecto"}
-                    self.wfile.write(json.dumps(response).encode())
-                    return
-                
-                # Asegurar que sources sea una lista
-                if "sources" not in rag_result or not isinstance(rag_result["sources"], list):
-                    logger.warning("rag_result contiene sources en formato incorrecto, ajustando")
-                    rag_result["sources"] = []
-                
-                # Normalizar las fuentes usando la función de formato segura
-                rag_result["sources"] = formatSources(rag_result["sources"])
-                
-                logger.info(f"Respuesta generada ({len(rag_result['response'])} caracteres): {rag_result['response'][:100]}...")
-                
-                # Enviar respuesta
-                logger.info(f"Enviando respuesta al cliente: {time.time() - start_time:.3f}s")
-                self.wfile.write(json.dumps(rag_result).encode())
-                logger.info(f"=== FIN DE SOLICITUD === Total: {time.time() - start_time:.3f}s")
-            except Exception as e:
-                logger.error(f"Error en process_query: {str(e)}")
-                logger.error(traceback.format_exc())
-                response = {'error': f"Error en process_query: {str(e)}"}
-                self.wfile.write(json.dumps(response).encode())
-                logger.info(f"=== ERROR EN SOLICITUD === Total: {time.time() - start_time:.3f}s")
-            
-        except Exception as e:
-            # Obtener el traceback completo
-            error_traceback = traceback.format_exc()
-            logger.error(f"Error general: {str(e)}")
-            logger.error(error_traceback)
-            
-            response = {
-                'error': f"Error general: {str(e)}",
-                'traceback': error_traceback
-            }
-            self.wfile.write(json.dumps(response).encode())
-            logger.info(f"=== ERROR GENERAL EN SOLICITUD === Total: {time.time() - start_time:.3f}s")
+        # Obtener el ID de la consulta insertada
+        if insert_result.data and len(insert_result.data) > 0:
+            query_id = insert_result.data[0].get("id")
+            logger.info(f"ID de la consulta: {query_id}")
+            return query_id
+        return None
+    except Exception as e:
+        logger.error(f"Error al registrar la consulta en la tabla 'queries': {str(e)}")
+        return None
 
-def get_embedding(text):
-    """Genera un embedding para el texto dado usando la API de OpenAI."""
+def get_embedding(text, use_cache=True):
+    """Genera un embedding para el texto dado usando la API de OpenAI con caché opcional."""
+    if not text:
+        logger.error("Texto vacío para generar embedding")
+        raise ValueError("No se puede generar embedding para texto vacío")
+    
     start_time = time.time()
+    
+    # Usar caché si está habilitado
+    if use_cache and text in EMBEDDING_CACHE:
+        logger.info(f"Usando embedding en caché para: {text[:30]}...")
+        return EMBEDDING_CACHE[text]
+    
     logger.info("Iniciando generación de embedding...")
     
     text = text.replace("\n", " ")
@@ -189,7 +143,14 @@ def get_embedding(text):
             model=DEFAULT_EMBEDDING_MODEL
         )
         logger.info(f"Embedding generado correctamente en {time.time() - start_time:.3f}s")
-        return response.data[0].embedding
+        
+        embedding = response.data[0].embedding
+        
+        # Guardar en caché si está habilitado
+        if use_cache:
+            EMBEDDING_CACHE[text] = embedding
+            
+        return embedding
     except Exception as e:
         logger.error(f"Error al generar embedding: {str(e)}")
         logger.error(traceback.format_exc())
@@ -201,33 +162,38 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
     query_steps = {}
     
     try:
-        # Conexión a Supabase (una conexión por solicitud)
-        logger.info(f"Conectando a Supabase: {SUPABASE_URL[:20]}...")
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        query_steps["init_supabase"] = time.time() - start_time
+        # Inicializar clientes
+        if not OPENAI_CLIENT:
+            return {"error": "API key de OpenAI no configurada"}
         
-        # Generar embedding para la consulta
-        logger.info("Generando embedding para la consulta...")
-        embedding_start = time.time()
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            return {"error": "Credenciales de Supabase no configuradas"}
+            
+        try:
+            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+            init_time = time.time() - start_time
+            query_steps["init"] = init_time
+            logger.info(f"Clientes inicializados en {init_time:.3f}s")
+        except Exception as e:
+            logger.error(f"Error al inicializar Supabase: {str(e)}")
+            return {"error": f"Error al conectar con Supabase: {str(e)}"}
+        
+        # 1. Generar embedding de la consulta
+        logger.info("Generando embedding de la consulta...")
+        embed_start = time.time()
+        
         try:
             query_embedding = get_embedding(query)
-            logger.info(f"Embedding generado: {len(query_embedding)} dimensiones")
-            query_steps["embedding"] = time.time() - embedding_start
+            query_steps["embedding"] = time.time() - embed_start
+            logger.info(f"Embedding generado en {query_steps['embedding']:.3f}s")
         except Exception as e:
             logger.error(f"Error al generar embedding: {str(e)}")
             return {"error": f"Error al generar embedding: {str(e)}"}
         
-        # Control de tiempo restante
-        time_used = time.time() - start_time
-        time_remaining = timeout - time_used
-        logger.info(f"Tiempo usado: {time_used:.3f}s, restante: {time_remaining:.3f}s")
-        
-        if time_remaining < 5.0:
-            return {"error": "Tiempo insuficiente para completar la consulta"}
-        
-        # Buscar documentos relevantes en Supabase
-        logger.info("Buscando documentos relevantes...")
+        # 2. Buscar documentos similares
+        logger.info("Buscando documentos similares...")
         search_start = time.time()
+        
         try:
             result = supabase.rpc(
                 'match_documents',
@@ -266,13 +232,24 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
                 if not isinstance(metadata, dict):
                     metadata = {}  # Si no es un diccionario, usar uno vacío
                     logger.warning(f"Metadata no es un diccionario: {type(metadata)}")
-                    
+                
+                # Asegurar que total_chunks siempre sea un número (1 por defecto si no existe)
+                total_chunks = metadata.get('total_chunks')
+                if total_chunks is None:
+                    total_chunks = 1
+                else:
+                    # Intentar convertir a número si es string
+                    try:
+                        total_chunks = int(total_chunks)
+                    except (ValueError, TypeError):
+                        total_chunks = 1
+                        
                 documents.append({
                     'content': doc.get('content', 'Contenido no disponible'),
                     'file_name': metadata.get('name', 'Desconocido'),
                     'file_id': metadata.get('file_id', ''),
                     'chunk_index': metadata.get('chunk_index', 0),
-                    'total_chunks': metadata.get('total_chunks', 0),
+                    'total_chunks': total_chunks,  # Usar el valor procesado
                     'similarity': doc.get('similarity', 0)
                 })
         
@@ -399,6 +376,9 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
             }
         }
         
+        # Ya no registramos la consulta aquí para evitar duplicados
+        # La consulta ya se registra en el manejador HTTP (Handler.do_POST)
+        
         return result
     
     except Exception as e:
@@ -412,4 +392,166 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
                 "query_steps": query_steps
             }
         }
+
+class Handler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
+    def do_POST(self):
+        # Configurar CORS y respuesta
+        origin = self.headers.get('Origin', '*')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', origin)
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
+        start_time = time.time()
+        logger.info(f"=== INICIO DE SOLICITUD === {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log_to_file(f"Inicio de petición POST a {self.path}")
+        
+        try:
+            # Obtener el cuerpo de la solicitud
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length == 0:
+                response = {'error': 'No se recibieron datos en la solicitud'}
+                self.wfile.write(json.dumps(response).encode())
+                logger.error("No se recibieron datos en la solicitud")
+                log_to_file("Error: No se recibieron datos en la solicitud")
+                return
+                
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data)
+            except json.JSONDecodeError as e:
+                response = {'error': f'Error al decodificar JSON: {str(e)}'}
+                self.wfile.write(json.dumps(response).encode())
+                logger.error(f"Error al decodificar JSON: {str(e)}")
+                log_to_file(f"Error: JSON inválido - {str(e)}")
+                return
+                
+            logger.info(f"Datos recibidos - tamaño: {len(post_data)} bytes: {time.time() - start_time:.3f}s")
+            log_to_file(f"Datos recibidos: {json.dumps(data)[:200]}...")
+            
+            # Obtener la consulta
+            query = data.get('query', '')
+            logger.info(f"Consulta recibida: '{query[:50]}...' (tiempo: {time.time() - start_time:.3f}s)")
+            
+            if not query:
+                response = {'error': 'La consulta está vacía'}
+                self.wfile.write(json.dumps(response).encode())
+                logger.info(f"Consulta vacía - terminando: {time.time() - start_time:.3f}s")
+                log_to_file("Error: consulta vacía")
+                return
+            
+            # Verificar que todos los clientes estén disponibles
+            if not OPENAI_CLIENT:
+                response = {'error': 'API key de OpenAI no configurada'}
+                self.wfile.write(json.dumps(response).encode())
+                logger.error("API key de OpenAI no configurada")
+                log_to_file("Error: API key de OpenAI no configurada")
+                return
+                
+            if not SUPABASE_URL or not SUPABASE_KEY:
+                response = {'error': 'Credenciales de Supabase no configuradas'}
+                self.wfile.write(json.dumps(response).encode())
+                logger.error("Credenciales de Supabase no configuradas")
+                log_to_file("Error: Credenciales de Supabase no configuradas")
+                return
+            
+            # Procesar la consulta con el sistema RAG optimizado
+            try:
+                logger.info(f"Iniciando process_query: {time.time() - start_time:.3f}s")
+                log_to_file(f"Iniciando process_query con consulta: {query}")
+                
+                # Control de tiempo máximo para evitar timeout
+                remaining_time = MAX_RESPONSE_TIME - (time.time() - start_time)
+                logger.info(f"Tiempo restante para respuesta: {remaining_time:.3f}s")
+                
+                if remaining_time < 5.0:
+                    # Si queda muy poco tiempo, enviamos una respuesta de error
+                    response = {'error': 'Tiempo insuficiente para procesar la consulta'}
+                    self.wfile.write(json.dumps(response).encode())
+                    logger.warning(f"Tiempo insuficiente para procesar: {remaining_time:.3f}s")
+                    log_to_file(f"Error: Tiempo insuficiente ({remaining_time:.3f}s)")
+                    return
+                
+                # Procesar la consulta con el tiempo restante como límite
+                rag_result = process_query(query, timeout=remaining_time)
+                log_to_file(f"Resultado de process_query recibido")
+                
+                process_time = time.time() - start_time
+                logger.info(f"process_query completado en {process_time:.3f}s")
+                
+                # Verificar el tipo de rag_result
+                if not isinstance(rag_result, dict):
+                    logger.error(f"Tipo inesperado de rag_result: {type(rag_result)}")
+                    response = {'error': f"Error interno: resultado inesperado"}
+                    self.wfile.write(json.dumps(response).encode())
+                    log_to_file(f"Error: Tipo inesperado de rag_result: {type(rag_result)}")
+                    return
+                
+                if "error" in rag_result:
+                    logger.error(f"Error devuelto por process_query: {rag_result['error']}")
+                    response = {'error': f"No se pudo procesar tu consulta: {rag_result['error']}"}
+                    self.wfile.write(json.dumps(response).encode())
+                    log_to_file(f"Error en process_query: {rag_result['error']}")
+                    return
+                
+                # Verificar que rag_result contiene respuesta y fuentes
+                if "response" not in rag_result:
+                    logger.error("rag_result no contiene campo 'response'")
+                    response = {'error': "Error interno: formato de respuesta incorrecto"}
+                    self.wfile.write(json.dumps(response).encode())
+                    log_to_file("Error: rag_result no contiene campo 'response'")
+                    return
+                
+                # Asegurar que sources sea una lista
+                if "sources" not in rag_result or not isinstance(rag_result["sources"], list):
+                    logger.warning("rag_result contiene sources en formato incorrecto, ajustando")
+                    rag_result["sources"] = []
+                
+                # Normalizar las fuentes usando la función de formato segura
+                rag_result["sources"] = formatSources(rag_result["sources"])
+                
+                logger.info(f"Respuesta generada ({len(rag_result['response'])} caracteres): {rag_result['response'][:100]}...")
+                
+                # Registrar la consulta en la tabla 'queries'
+                query_id = register_query_in_database(query, rag_result["response"], rag_result["sources"])
+                if query_id:
+                    rag_result["query_id"] = query_id
+                
+                # Enviar respuesta
+                logger.info(f"Enviando respuesta al cliente: {time.time() - start_time:.3f}s")
+                response_json = json.dumps(rag_result)
+                log_to_file(f"Respuesta preparada (longitud: {len(response_json)})")
+                self.wfile.write(response_json.encode())
+                logger.info(f"=== FIN DE SOLICITUD === Total: {time.time() - start_time:.3f}s")
+            except Exception as e:
+                logger.error(f"Error en process_query: {str(e)}")
+                logger.error(traceback.format_exc())
+                trace = traceback.format_exc()
+                log_to_file(f"Excepción en process_query: {str(e)}\n{trace[:300]}...")
+                response = {'error': f"Error en process_query: {str(e)}"}
+                self.wfile.write(json.dumps(response).encode())
+                logger.info(f"=== ERROR EN SOLICITUD === Total: {time.time() - start_time:.3f}s")
+            
+        except Exception as e:
+            # Obtener el traceback completo
+            error_traceback = traceback.format_exc()
+            logger.error(f"Error general: {str(e)}")
+            logger.error(error_traceback)
+            log_to_file(f"Error general: {str(e)}\n{error_traceback[:300]}...")
+            
+            response = {
+                'error': f"Error general: {str(e)}",
+                'traceback': error_traceback
+            }
+            self.wfile.write(json.dumps(response).encode())
+            logger.info(f"=== ERROR GENERAL EN SOLICITUD === Total: {time.time() - start_time:.3f}s")
 
