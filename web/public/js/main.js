@@ -689,7 +689,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const messageObj = {
                     role: 'assistant',
                     content: response.response,
-                    sources: response.sources
+                    sources: response.sources,
+                    query_id: response.query_id
                 };
                 
                 conversationHistory.push(messageObj);
@@ -732,6 +733,53 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     const sourcesSection = messageDiv.querySelector('.message-sources');
                     if (sourcesSection) sourcesSection.style.display = 'none';
+                }
+                
+                // Configurar botones de feedback si hay un query_id
+                if (response.query_id) {
+                    const queryId = response.query_id;
+                    const thumbsUpButton = messageDiv.querySelector('.action-button[title="Me gusta"]');
+                    const thumbsDownButton = messageDiv.querySelector('.action-button[title="No me gusta"]');
+                    
+                    // Almacenar el ID de la consulta en el mensaje
+                    messageDiv.dataset.queryId = queryId;
+                    
+                    console.log("Configurando feedback con query_id:", queryId);
+                    
+                    // Agregar listeners para los botones de feedback
+                    thumbsUpButton.addEventListener('click', function() {
+                        console.log("Enviando feedback positivo para queryId:", queryId);
+                        sendFeedback(queryId, 1);
+                        // Efecto visual para indicar la selección
+                        thumbsUpButton.classList.add('selected');
+                        thumbsDownButton.classList.remove('selected');
+                        
+                        // Cambiar la clase del icono de outline a solid
+                        thumbsUpButton.querySelector('i').classList.remove('far');
+                        thumbsUpButton.querySelector('i').classList.add('fas');
+                        
+                        // Asegurarse de que el otro botón tenga el icono outline
+                        thumbsDownButton.querySelector('i').classList.remove('fas');
+                        thumbsDownButton.querySelector('i').classList.add('far');
+                    });
+                    
+                    thumbsDownButton.addEventListener('click', function() {
+                        console.log("Enviando feedback negativo para queryId:", queryId);
+                        sendFeedback(queryId, -1);
+                        // Efecto visual para indicar la selección
+                        thumbsDownButton.classList.add('selected');
+                        thumbsUpButton.classList.remove('selected');
+                        
+                        // Cambiar la clase del icono de outline a solid
+                        thumbsDownButton.querySelector('i').classList.remove('far');
+                        thumbsDownButton.querySelector('i').classList.add('fas');
+                        
+                        // Asegurarse de que el otro botón tenga el icono outline
+                        thumbsUpButton.querySelector('i').classList.remove('fas');
+                        thumbsUpButton.querySelector('i').classList.add('far');
+                    });
+                } else {
+                    console.warn("No se recibió query_id para configurar feedback");
                 }
                 
                 // Actualizar el chat actual
@@ -892,8 +940,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function sendFeedback(queryId, feedbackValue) {
         if (!queryId) {
             console.error("No se puede enviar feedback: queryId no disponible");
+            showToast("No se puede enviar feedback: ID de consulta no disponible", "error");
             return;
         }
+        
+        console.log(`Enviando feedback ${feedbackValue} para consulta ${queryId}`);
         
         try {
             const response = await fetch(API_ENDPOINTS.feedback, {
@@ -907,7 +958,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
             
+            // Verificar si la respuesta HTTP fue exitosa
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log("Respuesta de feedback:", data);
             
             if (data.success) {
                 console.log("Feedback enviado correctamente");
@@ -920,11 +977,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(feedbackMessage, feedbackValue === 1 ? "success" : "warning");
             } else {
                 console.error("Error al enviar feedback:", data.error);
-                showToast("No se pudo registrar tu feedback", "error");
+                showToast(`No se pudo registrar tu feedback: ${data.error}`, "error");
             }
         } catch (error) {
             console.error("Error al enviar feedback:", error);
-            showToast("Error al enviar feedback", "error");
+            showToast(`Error al enviar feedback: ${error.message}`, "error");
         }
     }
 

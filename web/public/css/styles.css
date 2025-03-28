@@ -523,11 +523,44 @@ body.sidebar-open .app-container {
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--border-radius);
     color: var(--color-text-secondary);
-    transition: background-color var(--transition-speed);
+    position: relative;
+    transition: transform 0.2s ease, color 0.2s ease, background-color var(--transition-speed);
 }
 
+.action-button.selected {
+    transform: scale(1.2);
+}
+
+.action-button[title="Me gusta"].selected {
+    color: #4285f4;
+}
+
+.action-button[title="No me gusta"].selected {
+    color: #ea4335;
+}
+
+.action-button[title="Me gusta"].selected i,
+.action-button[title="No me gusta"].selected i {
+    font-weight: 900 !important; /* Forzar estilo sólido */
+}
+
+/* Efecto hover mejorado para botones de feedback */
 .action-button:hover {
+    transform: scale(1.1);
     background-color: var(--color-background);
+}
+
+.action-button[title="Me gusta"]:hover {
+    color: #4285f4;
+}
+
+.action-button[title="No me gusta"]:hover {
+    color: #ea4335;
+}
+
+/* Añadir una transición suave al cambio del icono */
+.action-button i {
+    transition: font-weight 0.3s;
 }
 
 /* Sección de análisis (thinking) */
@@ -773,17 +806,6 @@ body.sidebar-open .app-container {
 
 .feedback-toast.info {
     border-left-color: var(--color-primary);
-}
-
-/* Estilos para hacer que el icono de thumbs cambie a sólido cuando está seleccionado */
-.action-button[title="Me gusta"].selected .far.fa-thumbs-up,
-.action-button[title="No me gusta"].selected .far.fa-thumbs-down {
-    font-weight: 900;
-}
-
-/* Añadir una transición suave al cambio del icono */
-.action-button i {
-    transition: font-weight 0.3s;
 }
 
 /* Alerta del sistema */
