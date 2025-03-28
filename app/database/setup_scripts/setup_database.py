@@ -1,6 +1,7 @@
 """
 Script para configurar la base de datos de Supabase.
 Este script ejecuta el script SQL para configurar las tablas, funciones e índices necesarios.
+Utiliza el archivo supabase_unified.sql que contiene todas las definiciones de tablas y funciones.
 """
 
 import os
@@ -41,7 +42,7 @@ def setup_database(sql_script_path=None):
     if sql_script_path is None:
         # La ruta está relativa al directorio raíz del proyecto
         script_dir = Path(__file__).parent
-        sql_script_path = script_dir / "supabase_setup.sql"
+        sql_script_path = script_dir / "supabase_unified.sql"
     
     if not os.path.exists(sql_script_path):
         logger.error(f"El archivo SQL no existe: {sql_script_path}")
@@ -114,6 +115,16 @@ def check_database():
             try:
                 result = db.supabase.table(table).select("*").limit(1).execute()
                 logger.info(f"Tabla {table} existe")
+                
+                # Verificar si la tabla documents tiene la columna file_id
+                if table == "documents":
+                    try:
+                        # No podemos verificar columnas directamente, así que probamos una consulta
+                        result = db.supabase.table("documents").select("file_id").limit(1).execute()
+                        logger.info("La tabla documents tiene la columna file_id")
+                    except Exception as e:
+                        logger.warning("La tabla documents no tiene la columna file_id o hubo un error al verificar")
+                
             except Exception as e:
                 logger.warning(f"No se pudo verificar la tabla {table}: {e}")
         
