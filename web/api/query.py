@@ -54,7 +54,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     log_to_file("Faltan credenciales de Supabase")
 
 # Configuración global
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 DEFAULT_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 MAX_RESPONSE_TIME = float(os.getenv("MAX_RESPONSE_TIME", "15.0"))  # Tiempo máximo de respuesta
 logger.info(f"Modelo OpenAI: {DEFAULT_MODEL}, Modelo de embedding: {DEFAULT_EMBEDDING_MODEL}")

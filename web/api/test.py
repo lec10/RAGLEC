@@ -68,7 +68,7 @@ class handler(BaseHTTPRequestHandler):
                     # Test #1: Probar un modelo pequeño con un prompt corto
                     openai_start = time.time()
                     completion = client.chat.completions.create(
-                        model="gpt-3.5-turbo",
+                        model="gpt-4o-mini",
                         messages=[
                             {"role": "system", "content": "Eres un asistente útil."},
                             {"role": "user", "content": "Hola, responde brevemente."}
