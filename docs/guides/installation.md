@@ -12,6 +12,8 @@ Antes de comenzar la instalación, asegúrese de tener los siguientes requisitos
 - Cuenta de Supabase con la extensión pgvector habilitada
 - Cuenta de OpenAI con acceso a la API
 - Cuenta de Google Cloud con acceso a la API de Google Drive
+- Node.js y npm (para desarrollo y despliegue de la interfaz web)
+- Cuenta de Vercel (opcional, para despliegue de la interfaz web)
 - Acceso a un terminal/línea de comandos
 
 ## 1. Obtener el Código Fuente
@@ -49,10 +51,22 @@ source venv/bin/activate
 
 ## 3. Instalar Dependencias
 
-Instale todas las dependencias necesarias:
+### Python
+
+Instale todas las dependencias de Python necesarias:
 
 ```bash
 pip install -r requirements.txt
+```
+
+### Node.js (para la interfaz web)
+
+Si planea trabajar con la interfaz web, navegue a la carpeta `web` e instale las dependencias:
+
+```bash
+cd web
+npm install
+cd ..
 ```
 
 ## 4. Configurar Credenciales
@@ -127,7 +141,7 @@ GOOGLE_DRIVE_FOLDER_ID=su_id_de_carpeta_aqui
 Ejecute el script de configuración para crear las tablas y funciones necesarias en Supabase:
 
 ```bash
-python main.py admin setup
+python Main.py admin setup
 ```
 
 Debería ver un mensaje confirmando que la configuración se completó correctamente.
@@ -137,20 +151,72 @@ Debería ver un mensaje confirmando que la configuración se completó correctam
 Para verificar que todo está configurado correctamente, ejecute el comando de verificación:
 
 ```bash
-python main.py admin list
+python Main.py admin list
 ```
 
 Si la configuración es correcta, debería ver un mensaje indicando que no hay archivos en la base de datos (si es la primera vez que lo ejecuta).
 
 ## 7. Iniciar la Aplicación
 
-Ahora puede iniciar la aplicación con el siguiente comando:
+### Interfaz de Línea de Comandos
+
+Para iniciar la interfaz de chat en línea de comandos:
 
 ```bash
-python main.py chat
+python Main.py chat
 ```
 
-Esto iniciará la interfaz de chat en línea de comandos donde podrá realizar consultas.
+### Interfaz Web
+
+#### Desarrollo Local
+
+Para ejecutar la interfaz web en modo desarrollo:
+
+```bash
+cd web
+npm run dev
+```
+
+O utilizando el servidor de Python:
+
+```bash
+cd web
+python -m http.server 3000
+```
+
+Acceda a la aplicación a través de: http://localhost:3000
+
+#### Despliegue en Vercel
+
+Para desplegar la interfaz web en Vercel:
+
+1. Instale la CLI de Vercel (si aún no lo ha hecho):
+
+```bash
+npm install -g vercel
+```
+
+2. Despliegue la aplicación:
+
+```bash
+cd web
+vercel login
+vercel
+```
+
+3. Siga las instrucciones en pantalla para completar el despliegue.
+
+4. Una vez desplegada, podrá acceder a la aplicación a través de la URL proporcionada por Vercel.
+
+## 8. Procesar Documentos
+
+Para procesar los documentos en la carpeta monitoreada de Google Drive:
+
+```bash
+python Main.py process
+```
+
+Este comando detectará y procesará todos los documentos en la carpeta especificada.
 
 ## Configuración Adicional (Opcional)
 
@@ -179,9 +245,40 @@ Para ajustar el umbral de similitud predeterminado para las búsquedas:
 DEFAULT_SIMILARITY_THRESHOLD=0.1
 ```
 
+### Personalizar la Interfaz Web
+
+Si desea personalizar la interfaz web, puede editar los archivos en la carpeta `web/public`:
+
+- `index.html`: Estructura principal
+- `css/styles.css`: Estilos visuales
+- `js/app.js`: Lógica de la aplicación
+
 ## Solución de Problemas
 
 Si encuentra algún problema durante la instalación, consulte la [guía de solución de problemas](../maintenance/troubleshooting.md) o revise los logs en el archivo `rag_app.log`.
+
+### Problemas Comunes
+
+#### Error de Conexión a Supabase
+
+Si encuentra errores al conectar con Supabase, verifique:
+- La URL y clave API en su archivo `.env`
+- Que la extensión pgvector esté habilitada
+- Que las tablas y funciones se hayan creado correctamente
+
+#### Error de API de OpenAI
+
+Si hay problemas con las llamadas a la API de OpenAI:
+- Verifique su clave API
+- Confirme que tiene créditos suficientes
+- Asegúrese de que está utilizando modelos disponibles para su cuenta
+
+#### Problemas con la Interfaz Web
+
+Si la interfaz web no funciona correctamente:
+- Verifique que el backend esté en ejecución
+- Revise la consola del navegador para errores
+- Asegúrese de que todos los archivos estáticos se carguen correctamente
 
 ## Actualización
 
@@ -192,10 +289,13 @@ Para actualizar a una nueva versión del sistema, siga estos pasos:
 3. Reinstale las dependencias por si hubiera cambios:
    ```bash
    pip install -r requirements.txt
+   cd web
+   npm install
+   cd ..
    ```
 4. Actualice la base de datos si es necesario:
    ```bash
-   python main.py admin setup --update
+   python Main.py admin setup --update
    ```
 
 ## Desinstalación
@@ -206,7 +306,6 @@ Si desea desinstalar el sistema:
    ```bash
    deactivate
    ```
-
 2. Elimine la carpeta del proyecto y el entorno virtual
-
-3. Opcionalmente, elimine los recursos creados en Supabase y Google Cloud 
+3. Si ha desplegado la interfaz web en Vercel, puede eliminar el proyecto desde el panel de control de Vercel
+4. Opcionalmente, elimine los recursos creados en Supabase y Google Cloud 

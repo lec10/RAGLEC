@@ -21,6 +21,15 @@ RAGLEC está diseñado como un sistema modular que integra diferentes componente
 |  Interface        |     |  System             |     |  Database            |
 |                   |     |                     |     |                      |
 +-------------------+     +---------------------+     +----------------------+
+        ^                                                      ^
+        |                                                      |
+        v                                                      |
++-------------------+                                          |
+|                   |                                          |
+|  Web              +-----------------------------------------+
+|  Interface        |
+|                   |
++-------------------+
 ```
 
 ## Componentes Principales
@@ -80,13 +89,23 @@ RAGLEC está diseñado como un sistema modular que integra diferentes componente
   - Gestionar configuraciones como el umbral de similitud
 - **Tipo**: Interfaz de línea de comandos
 
+### 7. Interfaz Web
+
+- **Propósito**: Proporcionar una interfaz gráfica accesible mediante navegador web.
+- **Responsabilidades**:
+  - Mostrar una interfaz de chat moderna y responsiva
+  - Enviar consultas al backend mediante API
+  - Visualizar respuestas y fuentes
+- **Tecnologías**: HTML, CSS, JavaScript
+- **Despliegue**: Vercel
+
 ## Flujo de Datos Principal
 
 1. El usuario coloca documentos en una carpeta monitoreada de Google Drive
 2. El sistema detecta cambios y procesa los documentos
 3. Los documentos se dividen en fragmentos y se generan embeddings
 4. Los fragmentos y sus embeddings se almacenan en la base de datos
-5. El usuario realiza consultas a través de la interfaz de chat
+5. El usuario realiza consultas a través de la interfaz de chat o web
 6. El sistema vectoriza la consulta, busca documentos similares, y genera una respuesta
 7. La respuesta se muestra al usuario junto con las fuentes utilizadas
 
@@ -96,6 +115,8 @@ RAGLEC está diseñado como un sistema modular que integra diferentes componente
 - **Escalabilidad**: La arquitectura permite escalar horizontalmente añadiendo más instancias
 - **Extensibilidad**: Nuevos formatos de documentos o modelos pueden ser añadidos con cambios mínimos
 - **Rendimiento**: Se utilizan técnicas como caché de embeddings y optimización de consultas SQL
+- **Accesibilidad**: Múltiples interfaces (CLI y web) para diferentes necesidades de usuario
+- **Despliegue**: Soporte para despliegue en Vercel para la interfaz web
 
 ## Limitaciones Actuales
 

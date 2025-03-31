@@ -67,6 +67,26 @@ def do_performance(self, arg: str) -> None:
     """Muestra estadísticas de rendimiento."""
 ```
 
+### 3. Interfaz Web
+
+La interfaz web proporciona una experiencia de usuario moderna y accesible desde navegadores web.
+
+#### Características Principales
+
+- Diseño responsive para dispositivos móviles y de escritorio
+- Visualización de respuestas con formato
+- Visualización de fuentes utilizadas
+- Historial de conversación en la sesión
+- Posibilidad de valorar respuestas
+- Despliegue en Vercel
+
+#### Archivos Principales
+
+- `web/public/index.html`: Estructura principal de la interfaz
+- `web/public/css/styles.css`: Estilos de la interfaz
+- `web/public/js/app.js`: Lógica de la aplicación web
+- `web/vercel.json`: Configuración para despliegue en Vercel
+
 ## Flujo de Procesamiento de Consultas
 
 ### 1. Preprocesamiento de la Consulta
@@ -114,6 +134,32 @@ Respuesta:
 - Se devuelve un diccionario con la respuesta, las fuentes utilizadas y metadatos
 - Se incluyen métricas de rendimiento (tiempos de procesamiento)
 
+## Flujo de la Interfaz Web
+
+### 1. Carga de la Aplicación
+
+- El usuario accede a la interfaz web
+- Se cargan los recursos HTML, CSS y JavaScript
+- Se establece la conexión con el backend
+
+### 2. Envío de Consulta
+
+- El usuario introduce una consulta en el campo de texto
+- La aplicación muestra un indicador de carga
+- La consulta se envía al backend mediante una solicitud HTTP
+
+### 3. Procesamiento y Visualización
+
+- El backend procesa la consulta como se describió anteriormente
+- La respuesta se recibe y se formatea para su visualización
+- Se muestran las fuentes utilizadas con enlaces a los documentos originales si están disponibles
+
+### 4. Interacción del Usuario
+
+- El usuario puede valorar la respuesta (útil/no útil)
+- Las valoraciones se envían al backend para mejorar el sistema
+- El usuario puede continuar la conversación con nuevas consultas
+
 ## Configuración y Parámetros
 
 ### Umbral de Similitud
@@ -143,7 +189,7 @@ El sistema mantiene un historial de conversación que incluye:
 - Respuestas generadas
 - Fuentes utilizadas
 
-Este historial se guarda localmente en `conversation_history.json` y se carga al iniciar la aplicación.
+Este historial se guarda localmente en `conversation_history.json` y se carga al iniciar la aplicación. En la interfaz web, el historial se mantiene durante la sesión actual.
 
 ## Seguimiento de Rendimiento
 
@@ -154,11 +200,11 @@ El sistema incluye un rastreador de rendimiento que registra:
 - Tiempo de búsqueda
 - Tiempo de generación de respuesta
 
-Estas métricas pueden visualizarse con el comando `performance`.
+Estas métricas pueden visualizarse con el comando `performance` en la interfaz CLI.
 
 ## Ejemplos de Uso
 
-### Consulta Básica
+### Interfaz de Línea de Comandos
 
 ```
 >> ¿Qué es un modelo de negocio?
@@ -185,19 +231,30 @@ Respuesta:
 [Respuesta generada con el nuevo umbral]
 ```
 
-### Visualización de Estadísticas
+### Interfaz Web
 
+La interfaz web está disponible a través de:
+
+- Desarrollo local: http://localhost:3000
+- Producción: [URL de despliegue en Vercel]
+
+Para iniciar un servidor local:
+
+```bash
+cd web
+python -m http.server 3000
 ```
->> statistics
-Estadísticas de Documentos:
-- Archivos procesados: 5
-- Fragmentos totales: 150
-- Tipos de archivos: PDF (3), DOCX (2)
+
+Para desplegar en Vercel:
+
+```bash
+cd web
+vercel
 ```
 
 ## Problemas Comunes y Soluciones
 
-### No se encuentran resultados
+### No se encuentran resultados relevantes
 
 Si el sistema no encuentra documentos relevantes:
 
@@ -221,6 +278,14 @@ Para mejorar el tiempo de respuesta:
 2. **Utilizar un modelo más liviano**: Configurar un modelo de lenguaje más rápido
 3. **Optimizar la base de datos**: Revisar los índices y la estructura de la base de datos
 
+### Problemas en la Interfaz Web
+
+Si la interfaz web presenta problemas:
+
+1. **Errores de conexión**: Verificar que el backend esté accesible
+2. **Problemas de visualización**: Probar en diferentes navegadores
+3. **Errores de JavaScript**: Revisar la consola del navegador para mensajes de error
+
 ## Limitaciones Actuales
 
 1. **Dependencia de la calidad de los embeddings**:
@@ -229,16 +294,19 @@ Para mejorar el tiempo de respuesta:
 2. **Contexto limitado**:
    - El sistema está limitado por el número de documentos que puede incluir en el prompt
 
-3. **Sin memoria de conversación**:
-   - Cada consulta se procesa de forma independiente, sin contexto de consultas anteriores
+3. **Sin memoria de conversación entre sesiones**:
+   - Cada sesión web se procesa de forma independiente
 
 ## Futuras Mejoras
 
-1. **Memoria de conversación**:
-   - Implementar un sistema para mantener contexto entre consultas
+1. **Memoria de conversación persistente**:
+   - Implementar un sistema para mantener contexto entre sesiones
 
 2. **Rango de resultados dinámico**:
    - Ajustar automáticamente el número de resultados según la consulta
 
 3. **Filtrado de resultados**:
-   - Añadir capacidad para filtrar resultados por fuente, fecha, etc. 
+   - Añadir capacidad para filtrar resultados por fuente, fecha, etc.
+
+4. **Interfaz gráfica más avanzada**:
+   - Añadir visualizaciones de documentos y relaciones entre ellos 

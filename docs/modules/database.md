@@ -41,6 +41,12 @@ def get_file_info(self, file_id: str) -> Dict[str, Any]:
     
 def list_files(self, limit: int = 100) -> List[Dict[str, Any]]:
     """Lista los archivos en la base de datos."""
+    
+def get_chunks_by_file_id(self, file_id: str) -> List[Dict[str, Any]]:
+    """Obtiene todos los fragmentos asociados a un archivo."""
+    
+def delete_chunks_by_file_id(self, file_id: str) -> int:
+    """Elimina todos los fragmentos asociados a un archivo."""
 ```
 
 ### 2. Cliente Supabase (`supabase_client.py`)
@@ -89,19 +95,47 @@ Proporciona una interfaz de línea de comandos para administrar la base de datos
 
 ## Configuración de la Base de Datos
 
-### Esquema de Base de Datos (`supabase_setup.sql`)
+### Esquema de Base de Datos (`supabase_unified.sql`)
 
 El esquema define las tablas y funciones necesarias para el sistema.
 
 #### Tablas Principales
 
 1. **documents**: Almacena fragmentos de documentos y sus embeddings
+   - `id`: TEXT (Primary Key)
+   - `content`: TEXT
+   - `metadata`: JSONB
+   - `embedding`: VECTOR(1536)
+   - `file_id`: TEXT
+   - `created_at`: TIMESTAMP
+   - `updated_at`: TIMESTAMP
+
 2. **files**: Contiene información de los archivos procesados
+   - `id`: TEXT (Primary Key)
+   - `name`: TEXT
+   - `mime_type`: TEXT
+   - `source`: TEXT
+   - `last_modified`: TIMESTAMP
+   - `processed_at`: TIMESTAMP
+   - `status`: TEXT
+   - `metadata`: JSONB
+
 3. **queries**: Registra las consultas realizadas y sus respuestas
+   - `id`: SERIAL (Primary Key)
+   - `query`: TEXT
+   - `response`: TEXT
+   - `sources`: JSONB
+   - `created_at`: TIMESTAMP
+   - `user_feedback`: INTEGER
+
+4. **healthcheck**: Utilizada para verificar el estado del sistema
+   - `id`: SERIAL (Primary Key)
+   - `status`: TEXT
+   - `last_check`: TIMESTAMP
 
 #### Funciones SQL
 
-La función `match_documents` implementa la búsqueda por similitud coseno:
+1. **match_documents**: Implementa la búsqueda por similitud coseno
 
 ```sql
 CREATE OR REPLACE FUNCTION match_documents(
@@ -128,6 +162,57 @@ BEGIN
     WHERE 1 - (documents.embedding <=> query_embedding) > match_threshold
     ORDER BY similarity DESC
     LIMIT match_count;
+END;
+$$;
+```
+
+2. **get_chunks_by_file_id**: Obtiene los fragmentos asociados a un archivo
+
+```sql
+CREATE OR REPLACE FUNCTION get_chunks_by_file_id(file_id_param TEXT)
+RETURNS TABLE (
+    id TEXT,
+    content TEXT,
+    metadata JSONB
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        documents.id,
+        documents.content,
+        documents.metadata
+    FROM documents
+    WHERE 
+        metadata->>'file_id' = file_id_param
+        OR (file_id_param = documents.file_id AND documents.file_id IS NOT NULL);
+END;
+$$;
+```
+
+3. **delete_chunks_by_file_id**: Elimina los fragmentos asociados a un archivo
+
+```sql
+CREATE OR REPLACE FUNCTION delete_chunks_by_file_id(file_id TEXT)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    -- Contar primero cuántos registros se eliminarán
+    SELECT COUNT(*) INTO deleted_count
+    FROM documents
+    WHERE metadata->>'file_id' = file_id 
+          OR (file_id = documents.file_id AND documents.file_id IS NOT NULL);
+    
+    -- Luego eliminar sin usar RETURNING
+    DELETE FROM documents
+    WHERE metadata->>'file_id' = file_id
+          OR (file_id = documents.file_id AND documents.file_id IS NOT NULL);
+
+    RETURN deleted_count;
 END;
 $$;
 ```
@@ -159,6 +244,7 @@ Los metadatos se almacenan en formato JSONB y típicamente incluyen:
 - `total_chunks`: Número total de fragmentos
 - `mime_type`: Tipo MIME del archivo original
 - `last_modified`: Última fecha de modificación
+- `checksum`: Hash MD5 del contenido del archivo para detectar cambios
 
 ## Consideraciones de Rendimiento
 
@@ -195,6 +281,13 @@ for result in results:
     print(f"Similitud: {result['similarity']}")
     print(f"Contenido: {result['content'][:100]}...")
     print(f"Archivo: {result['metadata']['name']}")
+
+# Obtener fragmentos de un archivo
+chunks = db.get_chunks_by_file_id("archivo_id_123")
+
+# Eliminar un archivo y sus fragmentos
+deleted_count = db.delete_chunks_by_file_id("archivo_id_123")
+print(f"Se eliminaron {deleted_count} fragmentos")
 ```
 
 ## Problemas Comunes y Soluciones
@@ -213,4 +306,12 @@ Para mejorar el rendimiento con grandes volúmenes de datos:
 
 1. **Optimizar índices**: Ajustar los parámetros del índice `ivfflat`
 2. **Reducir dimensión**: Considerar técnicas de reducción de dimensionalidad
-3. **Particionar datos**: Dividir la colección en subcolecciones temáticas 
+3. **Particionar datos**: Dividir la colección en subcolecciones temáticas
+
+### Errores en las funciones RPC
+
+Si ocurren errores al llamar a las funciones RPC como `get_chunks_by_file_id` o `delete_chunks_by_file_id`:
+
+1. **Verificar los nombres de los parámetros**: Asegurarse de que coincidan con los definidos en SQL
+2. **Comprobar la existencia de las funciones**: Verificar que se hayan creado en la base de datos
+3. **Validar permisos**: Verificar que el usuario tenga permisos para ejecutar funciones RPC 

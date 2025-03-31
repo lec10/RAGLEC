@@ -41,7 +41,7 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
 
 ## 2. Flujo de Consultas
 
-### Procesamiento de Consultas del Usuario
+### Procesamiento de Consultas del Usuario (CLI)
 
 ```
 +-------------+     +---------------+     +----------------+     +---------------+     +----------------+
@@ -55,8 +55,22 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
       +---------------------------------------------------------------------------------------+
 ```
 
+### Procesamiento de Consultas del Usuario (Web)
+
+```
++-------------+     +---------------+     +----------------+     +---------------+     +----------------+
+|             |     |               |     |                |     |               |     |                |
+| Web         |---->| API           |---->| RAG Query      |---->| Vector        |---->| OpenAI         |
+| Interface   |     | Endpoint      |     | System         |     | Database      |     | LLM            |
+|             |     |               |     |                |     |               |     |                |
++-------------+     +---------------+     +----------------+     +---------------+     +----------------+
+      ^                                                                                       |
+      |                                                                                       |
+      +---------------------------------------------------------------------------------------+
+```
+
 1. **Entrada de Consulta**:
-   - El usuario introduce una consulta en la interfaz de chat
+   - El usuario introduce una consulta en la interfaz de chat (CLI o web)
    - La consulta se envía al sistema RAG
 
 2. **Vectorización de la Consulta**:
@@ -66,7 +80,7 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
 3. **Búsqueda por Similitud**:
    - El vector se utiliza para buscar documentos similares en la base de datos
    - La búsqueda utiliza la función SQL personalizada `match_documents`
-   - Se aplica un umbral de similitud (actualmente 0.1) para filtrar resultados irrelevantes
+   - Se aplica un umbral de similitud (configurable) para filtrar resultados irrelevantes
    - Se recuperan hasta 5 documentos (por defecto)
 
 4. **Generación de Respuesta**:
@@ -75,11 +89,32 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
    - El LLM genera una respuesta basada en los documentos proporcionados
 
 5. **Presentación al Usuario**:
-   - La respuesta se muestra al usuario
+   - La respuesta se muestra al usuario en la interfaz correspondiente
    - Se muestran las fuentes utilizadas (metadatos de los documentos)
    - La consulta y respuesta se registran en la base de datos para análisis
 
-## 3. Detalles Técnicos de los Datos
+## 3. Flujo de Datos Web
+
+### Interacción con la Interfaz Web
+
+1. **Solicitud del Usuario**:
+   - El usuario accede a la interfaz web a través de un navegador
+   - La aplicación web se carga desde el servidor de Vercel
+
+2. **Envío de Consulta**:
+   - El usuario introduce una consulta en la interfaz
+   - La aplicación web envía la consulta al backend mediante una solicitud HTTP
+
+3. **Procesamiento de la Consulta**:
+   - El backend procesa la consulta utilizando el sistema RAG
+   - Se genera una respuesta como se describió anteriormente
+
+4. **Respuesta al Usuario**:
+   - La respuesta se envía de vuelta a la aplicación web
+   - La interfaz muestra la respuesta y las fuentes al usuario
+   - La aplicación web puede mostrar elementos visuales adicionales (citas, enlaces, etc.)
+
+## 4. Detalles Técnicos de los Datos
 
 ### Estructura de la Base de Datos
 
@@ -88,6 +123,7 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
 - `content`: TEXT - Contenido de texto del fragmento
 - `metadata`: JSONB - Metadatos del fragmento
 - `embedding`: VECTOR(1536) - Vector de embedding del fragmento
+- `file_id`: TEXT - Identificador del archivo al que pertenece el fragmento (referencia a la tabla 'files')
 - `created_at`: TIMESTAMP - Fecha de creación
 - `updated_at`: TIMESTAMP - Fecha de última actualización
 
@@ -102,12 +138,21 @@ Este documento describe en detalle cómo fluyen los datos a través de los difer
 - `metadata`: JSONB - Metadatos adicionales
 
 **Tabla: queries**
+- `id`: SERIAL (Primary Key) - Identificador único de la consulta
 - `query`: TEXT - Consulta realizada
 - `response`: TEXT - Respuesta generada
 - `sources`: JSONB - Fuentes utilizadas
 - `created_at`: TIMESTAMP - Fecha de la consulta
+- `user_feedback`: INTEGER - Valoración opcional del usuario
 
-### Función SQL: match_documents
+**Tabla: healthcheck**
+- `id`: SERIAL (Primary Key) - Identificador único
+- `status`: TEXT - Estado de salud del sistema
+- `last_check`: TIMESTAMP - Última verificación de salud
+
+### Funciones SQL
+
+La función `match_documents` implementa la búsqueda por similitud coseno:
 
 ```sql
 CREATE OR REPLACE FUNCTION match_documents(
@@ -138,9 +183,58 @@ END;
 $$;
 ```
 
-Esta función calcula la similitud coseno entre el embedding de la consulta y los embeddings almacenados, filtra según el umbral establecido, y devuelve los resultados ordenados por similitud.
+Función `get_chunks_by_file_id` para obtener los fragmentos de un archivo:
 
-## 4. Consideraciones sobre el Flujo de Datos
+```sql
+CREATE OR REPLACE FUNCTION get_chunks_by_file_id(file_id_param TEXT)
+RETURNS TABLE (
+    id TEXT,
+    content TEXT,
+    metadata JSONB
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        documents.id,
+        documents.content,
+        documents.metadata
+    FROM documents
+    WHERE 
+        metadata->>'file_id' = file_id_param
+        OR (file_id_param = documents.file_id AND documents.file_id IS NOT NULL);
+END;
+$$;
+```
+
+Función `delete_chunks_by_file_id` para eliminar los fragmentos de un archivo:
+
+```sql
+CREATE OR REPLACE FUNCTION delete_chunks_by_file_id(file_id TEXT)
+RETURNS INTEGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    -- Contar primero cuántos registros se eliminarán
+    SELECT COUNT(*) INTO deleted_count
+    FROM documents
+    WHERE metadata->>'file_id' = file_id 
+          OR (file_id = documents.file_id AND documents.file_id IS NOT NULL);
+    
+    -- Luego eliminar sin usar RETURNING
+    DELETE FROM documents
+    WHERE metadata->>'file_id' = file_id
+          OR (file_id = documents.file_id AND documents.file_id IS NOT NULL);
+
+    RETURN deleted_count;
+END;
+$$;
+```
+
+## 5. Consideraciones sobre el Flujo de Datos
 
 ### Puntos Críticos
 
@@ -159,6 +253,11 @@ Esta función calcula la similitud coseno entre el embedding de la consulta y lo
    - Fragmentos muy grandes pueden diluir la relevancia
    - El tamaño actual (1000 caracteres) es un compromiso
 
+4. **Interfaz Web**:
+   - La latencia de la API puede afectar la experiencia del usuario
+   - Es necesario manejar adecuadamente los errores y estados de carga
+   - La interfaz debe ser responsiva y accesible desde diferentes dispositivos
+
 ### Optimizaciones Futuras
 
 1. **Caché de Consultas Frecuentes**:
@@ -171,4 +270,8 @@ Esta función calcula la similitud coseno entre el embedding de la consulta y lo
 
 3. **Procesamiento Paralelo**:
    - Paralelizar la generación de embeddings para múltiples fragmentos
-   - Reducir tiempo de procesamiento para documentos grandes 
+   - Reducir tiempo de procesamiento para documentos grandes
+
+4. **API RESTful Completa**:
+   - Desarrollar una API completa para integración con otras aplicaciones
+   - Implementar autenticación y limitación de tasa 

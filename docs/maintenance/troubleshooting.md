@@ -95,7 +95,7 @@ Esta guía proporciona soluciones a problemas comunes que pueden surgir durante 
    - **Problema**: La base de datos no tiene las tablas necesarias.
    - **Solución**: Ejecutar el script de configuración:
    ```
-   python main.py admin setup
+   python Main.py admin setup
    ```
 
 ### Error en las consultas SQL
@@ -111,6 +111,20 @@ Esta guía proporciona soluciones a problemas comunes que pueden surgir durante 
 2. **Tamaño de embedding incorrecto**
    - **Problema**: La dimensión del embedding no coincide con la configurada en la base de datos.
    - **Solución**: Verificar que el modelo usado genera embeddings de la dimensión esperada (1536).
+
+### Error en funciones RPC
+
+**Síntoma**: Errores al llamar a funciones RPC como `get_chunks_by_file_id` o `delete_chunks_by_file_id`.
+
+**Posibles causas y soluciones**:
+
+1. **Nombre de parámetro incorrecto**
+   - **Problema**: El nombre del parámetro en la llamada no coincide con la definición SQL.
+   - **Solución**: Verificar que los nombres de parámetros coinciden exactamente con la definición en SQL.
+
+2. **Función no existe**
+   - **Problema**: La función RPC no está creada en la base de datos.
+   - **Solución**: Ejecutar el script de configuración para crear todas las funciones necesarias.
 
 ## Problemas con el Procesamiento de Documentos
 
@@ -200,29 +214,106 @@ Esta guía proporciona soluciones a problemas comunes que pueden surgir durante 
    - **Problema**: Algunos paquetes requieren compilación y faltan dependencias del sistema.
    - **Solución**: Instalar las herramientas de desarrollo necesarias para el sistema operativo.
 
+## Problemas con la Interfaz Web
+
+### La interfaz web no carga correctamente
+
+**Síntoma**: La página web no se carga o muestra errores en el navegador.
+
+**Posibles causas y soluciones**:
+
+1. **Archivos estáticos no encontrados**
+   - **Problema**: Los archivos CSS o JavaScript no se cargan.
+   - **Solución**: Verificar que todos los archivos estáticos estén en las ubicaciones correctas dentro de `web/public/`.
+
+2. **Error de CORS**
+   - **Problema**: Problemas de políticas de seguridad al realizar solicitudes al backend.
+   - **Solución**: Configurar correctamente los encabezados CORS en el servidor backend.
+
+3. **Problemas con JavaScript**
+   - **Problema**: Errores en el código JavaScript.
+   - **Solución**: Revisar la consola del navegador para identificar errores específicos y corregirlos.
+
+### No se pueden enviar consultas desde la interfaz web
+
+**Síntoma**: Al intentar enviar una consulta, no hay respuesta o se muestra un error.
+
+**Posibles causas y soluciones**:
+
+1. **Backend no accesible**
+   - **Problema**: El servidor backend no está respondiendo.
+   - **Solución**: Verificar que el backend esté en ejecución y accesible desde la interfaz web.
+
+2. **URL incorrecta**
+   - **Problema**: La URL a la que se envían las solicitudes es incorrecta.
+   - **Solución**: Revisar la configuración de URL en el archivo `web/public/js/app.js`.
+
+3. **Problemas con el formato de la solicitud**
+   - **Problema**: La solicitud HTTP no tiene el formato esperado por el backend.
+   - **Solución**: Revisar el formato de la solicitud y asegurarse de que coincide con lo que espera el backend.
+
+## Problemas con Vercel
+
+### Error al desplegar en Vercel
+
+**Síntoma**: El despliegue en Vercel falla con errores.
+
+**Posibles causas y soluciones**:
+
+1. **Configuración incorrecta**
+   - **Problema**: El archivo `vercel.json` contiene configuraciones incorrectas.
+   - **Solución**: Revisar y corregir la configuración según la documentación de Vercel.
+
+2. **Dependencias faltantes**
+   - **Problema**: Faltan dependencias necesarias para el despliegue.
+   - **Solución**: Asegurarse de que todas las dependencias estén especificadas en el proyecto.
+
+3. **Errores en el código**
+   - **Problema**: Hay errores en el código que impiden el despliegue.
+   - **Solución**: Revisar los logs de despliegue de Vercel para identificar los errores específicos.
+
+### Interfaz web desplegada no puede conectarse al backend
+
+**Síntoma**: La interfaz web desplegada en Vercel no puede comunicarse con el backend.
+
+**Posibles causas y soluciones**:
+
+1. **Backend no accesible públicamente**
+   - **Problema**: El backend no está accesible desde Internet.
+   - **Solución**: Asegurarse de que el backend esté desplegado con una URL pública y accesible.
+
+2. **CORS no configurado**
+   - **Problema**: El backend no permite solicitudes desde el dominio de Vercel.
+   - **Solución**: Configurar correctamente CORS en el backend para permitir solicitudes desde el dominio de Vercel.
+
 ## Verificación del Sistema
 
 Para realizar una verificación completa del sistema, utilice el siguiente procedimiento:
 
 1. **Verificar la conexión a Supabase**:
    ```
-   python main.py admin list
+   python Main.py admin list
    ```
    Debería mostrar una lista de archivos procesados.
 
 2. **Verificar la conexión a Google Drive**:
    ```
-   python main.py admin show --files
+   python Main.py admin show --files
    ```
    Debería mostrar información sobre los archivos en Google Drive.
 
-3. **Verificar la funcionalidad completa**:
+3. **Verificar la funcionalidad de la interfaz CLI**:
    Iniciar la interfaz de chat, configurar un umbral bajo y realizar una consulta:
    ```
-   python main.py chat
+   python Main.py chat
    >> threshold 0.01
    >> ¿Qué es un modelo de negocio?
    ```
+
+4. **Verificar la funcionalidad de la interfaz web**:
+   - Iniciar el servidor local: `cd web && python -m http.server 3000`
+   - Abrir http://localhost:3000 en un navegador
+   - Realizar una consulta y verificar que se recibe respuesta
 
 ## Registros y Depuración
 
@@ -249,14 +340,26 @@ Para una depuración más detallada, puede habilitar logs adicionales para compo
    SUPABASE_LOG_LEVEL=DEBUG
    ```
 
-2. **OpenAI**:
-   Añadir a `.env`:
-   ```
-   OPENAI_LOG_LEVEL=DEBUG
-   ```
+2. **Interfaz Web**:
+   Para depurar problemas en la interfaz web, abrir la consola del navegador (F12) y revisar mensajes de error.
 
-3. **Google Drive**:
-   Añadir a `.env`:
+3. **Solicitudes de Red**:
+   En la consola del navegador, ir a la pestaña "Network" para ver detalles de solicitudes HTTP y respuestas.
+
+## Restablecimiento del Sistema
+
+Si encuentra problemas graves que no puede resolver, puede intentar restablecer el sistema completamente:
+
+1. **Limpiar la base de datos**:
    ```
-   GOOGLE_API_LOG_LEVEL=DEBUG
-   ``` 
+   python Main.py admin setup --reset
+   ```
+   **Advertencia**: Esto eliminará todos los datos de la base de datos.
+
+2. **Reiniciar desde cero**:
+   - Eliminar todos los archivos generados (`rag_app.log`, `conversation_history.json`)
+   - Reiniciar el procesamiento de documentos: `python Main.py process`
+   - Verificar el funcionamiento con una consulta simple
+
+3. **Reinstalar la aplicación**:
+   En casos extremos, puede ser necesario reinstalar completamente la aplicación siguiendo la guía de instalación. 
