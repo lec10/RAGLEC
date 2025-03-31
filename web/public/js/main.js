@@ -206,6 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Resetear currentMessageId
         currentMessageId = 0;
         
+        // IMPORTANTE: Limpiar el historial de conversación
+        conversationHistory = [];
+        
         // Guardar chat en localStorage
         localStorage.setItem('raglec-current-chat-id', currentChatId);
         
@@ -934,12 +937,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function sendQuery(query) {
+        // Incluir el historial de conversación en la solicitud
+        // Limitamos a los últimos 10 mensajes para no sobrecargar el contexto
+        const recentHistory = conversationHistory.slice(-10);
+        
         const response = await fetch(API_ENDPOINTS.query, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ 
+                query,
+                conversation_history: recentHistory 
+            }),
         });
         
         if (!response.ok) {

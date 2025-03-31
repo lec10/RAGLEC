@@ -7,6 +7,14 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from supabase import create_client
 from datetime import datetime
+# El módulo re (regular expressions) proporciona soporte para expresiones regulares
+# Se utiliza para buscar y manipular patrones de texto de forma avanzada
+# Algunas funciones principales son:
+#  - re.search(): Busca un patrón en cualquier parte del texto
+#  - re.match(): Busca un patrón al inicio del texto
+#  - re.findall(): Encuentra todas las ocurrencias de un patrón
+#  - re.sub(): Sustituye patrones encontrados por otro texto
+import re
 
 # Configurar logging para reducir mensajes innecesarios
 import logging
@@ -156,7 +164,7 @@ def get_embedding(text, use_cache=True):
         logger.error(traceback.format_exc())
         raise Exception(f"Error en generación de embedding: {str(e)}")
 
-def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RESPONSE_TIME):
+def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RESPONSE_TIME, conversation_history=[]):
     """Procesa una consulta usando la API de OpenAI y Supabase directamente."""
     start_time = time.time()
     query_steps = {}
@@ -307,19 +315,39 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
         logger.info("Llamando a la API de OpenAI...")
         logger.info(f"Usando modelo: {DEFAULT_MODEL}")
         
-        # Crear el prompt
-        system_message = "Eres un asistente especializado en responder consultas basándote exclusivamente en la información proporcionada."
+        # Formatear el historial de conversación para incluirlo en el prompt
+        conversation_context = ""
+        if conversation_history and isinstance(conversation_history, list) and len(conversation_history) > 0:
+            logger.info(f"Formateando historial de conversación ({len(conversation_history)} mensajes)")
+            for message in conversation_history:
+                role = message.get('role', '')
+                content = message.get('content', '')
+                if role and content:
+                    conversation_context += f"{role.capitalize()}: {content}\n\n"
+            logger.info(f"Historial formateado: {len(conversation_context)} caracteres")
+        
+        # Crear el prompt con instrucciones estrictas
+        system_message = """Eres un asistente restrictivo que SOLAMENTE puede responder usando la información de los documentos proporcionados.
+NUNCA uses conocimiento general o información externa a los documentos.
+DEBES citar la fuente exacta de cada pieza de información como (Documento #, Fragmento # de #).
+Si los documentos NO contienen información relevante, debes responder: "No puedo responder esta pregunta con los documentos proporcionados"."""
+        
         user_message = f"""
-        Responde a la siguiente pregunta basándote únicamente en la información proporcionada en los documentos.
-        
-        Contexto:
-        {context}
-        
-        Pregunta: {query}
-        
-        Si la información no es suficiente para responder la pregunta completamente, indica qué parte de la información falta.
-        Cita las fuentes en tu respuesta como (Documento #, Fragmento # de #).
-        """
+INSTRUCCIONES ESTRICTAS:
+1. Responde ÚNICAMENTE usando la información presente en los documentos proporcionados.
+2. NO utilices NINGÚN conocimiento que no esté en los documentos.
+3. Cada afirmación DEBE terminar con su cita (Documento #, Fragmento # de #).
+4. Si no encuentras información relevante en los documentos, responde: "No puedo responder esta pregunta con los documentos proporcionados".
+
+{f"Conversación previa:\n{conversation_context}\n" if conversation_context else ""}
+
+Documentos disponibles:
+{context}
+
+Pregunta actual: {query}
+
+RECUERDA: Solo puedes usar información de los documentos proporcionados. Cita TODAS las fuentes.
+"""
         
         # Adaptamos los tokens según el tiempo restante
         max_tokens = 1000
@@ -338,13 +366,21 @@ def process_query(query, similarity_threshold=0.1, num_results=5, timeout=MAX_RE
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message}
                 ],
-                temperature=0.7,
+                temperature=0.3,  # Reducir temperatura para respuestas más deterministas (antes era 0.7)
                 max_tokens=max_tokens,
                 timeout=openai_timeout
             )
             
             response_text = completion.choices[0].message.content
             query_steps["openai_call"] = time.time() - openai_start
+            
+            # Verificar que la respuesta incluya citas de documentos
+            if documents and not re.search(r'\(Documento \d+', response_text):
+                logger.warning("La respuesta no contiene citas a los documentos - agregando advertencia")
+                response_text += "\n\nADVERTENCIA: Esta respuesta puede no estar basada en los documentos proporcionados. Por favor, solicita aclaración."
+                
+                # Opcional: Forzar una respuesta que indique que no se encontró información
+                # response_text = "No puedo responder esta pregunta con información específica de los documentos proporcionados. Por favor, reformula tu pregunta o solicita información disponible en los documentos."
             
             logger.info(f"Hora fin de llamada a OpenAI: {time.strftime('%Y-%m-%d %H:%M:%S')}")
             logger.info(f"Tiempo total de llamada a OpenAI: {time.time() - openai_start:.2f}s")
@@ -458,7 +494,10 @@ class Handler(BaseHTTPRequestHandler):
             
             # Obtener la consulta
             query = data.get('query', '')
+            # Obtener el historial de conversación si existe
+            conversation_history = data.get('conversation_history', [])
             logger.info(f"Consulta recibida: '{query[:50]}...' (tiempo: {time.time() - start_time:.3f}s)")
+            logger.info(f"Historial de conversación recibido: {len(conversation_history)} mensajes")
             
             if not query:
                 response = {'error': 'La consulta está vacía'}
@@ -500,7 +539,11 @@ class Handler(BaseHTTPRequestHandler):
                     return
                 
                 # Procesar la consulta con el tiempo restante como límite
-                rag_result = process_query(query, timeout=remaining_time)
+                rag_result = process_query(
+                    query, 
+                    timeout=remaining_time,
+                    conversation_history=conversation_history
+                )
                 log_to_file(f"Resultado de process_query recibido")
                 
                 process_time = time.time() - start_time
